@@ -1,0 +1,25 @@
+{
+  "name":           "uupaa.task.js",
+  "version":        "0.8.0",
+  "description":    "Counter based task executor.",
+  "url":            "https://github.com/uupaa/Task.js",
+  "keywords":       ["async", "task", "flow", "util", "uupaa"],
+  "author":         "uupaa <uupaa.js@gmail.com>",
+  "repository": {
+    "type":         "git",
+    "url":          "https://github.com/uupaa/Task.js.git"
+  },
+  "scripts": {
+    "start":        "node node_modules/uupaa.minify.js --keep --output ./lib/Task.min.js ./lib/Task.js",
+    "test":         "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js; open test/index.html"
+  },
+  "devDependencies": {
+    "uupaa.test.js":    "",
+    "uupaa.help.js":    "",
+    "uupaa.minify.js":  ""
+  },
+  "lib":            "./lib/",
+  "main":           "./index.js",
+  "license":        "MIT",
+  "contributors":   []
+}
