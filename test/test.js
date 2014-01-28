@@ -9,10 +9,13 @@ new Test().add([
         testFinisedAndFailureMessage,
         testJunctionSuccess,
         testJunctionFail,
-        testJunctionWithArguments
+        testJunctionWithArguments,
+        testDump,
+        testDumpAll,
+        testDumpMissMatch,
     ]).run().worker();
 
-function testPassWithoutArgument(taskRunner) {
+function testPassWithoutArgument(next) {
     var task = new Task(2, callback, "testPassWithoutArgument");
 
     task.pass();
@@ -24,15 +27,15 @@ function testPassWithoutArgument(taskRunner) {
 
         if (err === null && args + "" === [] + "") {
             console.log("testPassWithoutArgument ok");
-            taskRunner && taskRunner.pass();
+            next && next.pass();
         } else {
             console.error("testPassWithoutArgument ng");
-            taskRunner && taskRunner.miss();
+            next && next.miss();
         }
     }
 }
 
-function testMissWithoutArgument(taskRunner) {
+function testMissWithoutArgument(next) {
     var task = new Task(2, callback, "testMissWithoutArgument");
 
     task.miss();
@@ -44,15 +47,15 @@ function testMissWithoutArgument(taskRunner) {
 
         if (err instanceof Error && args + "" === [] + "") {
             console.log("testMissWithoutArgument ok");
-            taskRunner && taskRunner.pass();
+            next && next.pass();
         } else {
             console.error("testMissWithoutArgument ng");
-            taskRunner && taskRunner.miss();
+            next && next.miss();
         }
     }
 }
 
-function testExitWithoutArgument(taskRunner) {
+function testExitWithoutArgument(next) {
     var task = new Task(2, callback, "testExitWithoutArgument");
 
     task.exit(); // -> done
@@ -63,15 +66,15 @@ function testExitWithoutArgument(taskRunner) {
 
         if (err instanceof Error && args + "" === [] + "") {
             console.log("testExitWithoutArgument ok");
-            taskRunner && taskRunner.pass();
+            next && next.pass();
         } else {
             console.error("testExitWithoutArgument ng");
-            taskRunner && taskRunner.miss();
+            next && next.miss();
         }
     }
 }
 
-function testPassWithObjectKey(taskRunner) {
+function testPassWithObjectKey(next) {
     var task = new Task(4, callback, "testPassWithObjectKey");
 
     task.pass(0);           // arrayValue = 0
@@ -92,10 +95,10 @@ function testPassWithObjectKey(taskRunner) {
             args_left === args_right &&
             values_left === values_right) {
             console.log("testPassWithObjectKey ok");
-            taskRunner && taskRunner.pass();
+            next && next.pass();
         } else {
             console.error("testPassWithObjectKey ng");
-            taskRunner && taskRunner.miss();
+            next && next.miss();
         }
     }
 
@@ -107,7 +110,7 @@ function testPassWithObjectKey(taskRunner) {
     }
 }
 
-function testExecuteSyncAndAsyncTask(taskRunner) { // task sync 4 events
+function testExecuteSyncAndAsyncTask(next) { // task sync 4 events
     var task = new Task(4, callback, "testExecuteSyncAndAsyncTask");
     var testResult = [1, 2, 3, 4];
 
@@ -121,15 +124,15 @@ function testExecuteSyncAndAsyncTask(taskRunner) { // task sync 4 events
     function callback(err, args) { // err = null, args = [1,2,3,4]
         if (args.join() === testResult + "") {
             console.log("testExecuteSyncAndAsyncTask ok");
-            taskRunner && taskRunner.pass();
+            next && next.pass();
         } else {
             console.error("testExecuteSyncAndAsyncTask ng");
-            taskRunner && taskRunner.miss();
+            next && next.miss();
         }
     }
 }
 
-function testMissable(taskRunner) {
+function testMissable(next) {
     var task = new Task(4, callback, "testMissable").missable(2);
 
     setTimeout(function() { task.pass(1); }, Math.random() * 10);
@@ -142,16 +145,16 @@ function testMissable(taskRunner) {
     function callback(err, args) {
         if (err) {
             console.error("testMissable ng");
-            taskRunner && taskRunner.miss();
+            next && next.miss();
         } else {
             console.log("testMissable ok");
-            taskRunner && taskRunner.pass();
+            next && next.pass();
         }
     }
 }
 
 // args[key] access.
-function testArgsKeyAccess(taskRunner) {
+function testArgsKeyAccess(next) {
     var task4 = new Task(3, function(err,
                                      args) { // args -> ["value1", "value2", "value3"] + { key1: "value1", key2: "value2" }
             if (args[0] === "value1" &&
@@ -162,10 +165,10 @@ function testArgsKeyAccess(taskRunner) {
                 args.key2 === "value2") {
 
                 console.log("testArgsKeyAccess ok");
-                taskRunner && taskRunner.pass();
+                next && next.pass();
             } else {
                 console.error("testArgsKeyAccess ng");
-                taskRunner && taskRunner.miss();
+                next && next.miss();
             }
         }, "testArgsKeyAccess");
 
@@ -174,15 +177,15 @@ function testArgsKeyAccess(taskRunner) {
     task4.pass("value3");
 }
 
-function testFinisedAndFailureMessage(taskRunner) {
+function testFinisedAndFailureMessage(next) {
     var task = new Task(1, function(err,    // Error("fail reason")
                                     args) { // ["value"] + { key: "value" }
             if (err && err.message === "fail reason") {
                 console.log("testFinisedAndFailureMessage ok");
-                taskRunner && taskRunner.pass();
+                next && next.pass();
             } else {
                 console.error("testFinisedAndFailureMessage ng");
-                taskRunner && taskRunner.miss();
+                next && next.miss();
             }
         }, "testFinisedAndFailureMessage");
 
@@ -190,14 +193,14 @@ function testFinisedAndFailureMessage(taskRunner) {
          message("fail reason").miss("value", "key"); // { key: "value" }
 }
 
-function testJunctionSuccess(taskRunner) {
+function testJunctionSuccess(next) {
     var junction = new Task(2, function(err, args) {
             if (!err) {
                 console.log("testJunctionSuccess ok");
-                taskRunner && taskRunner.pass();
+                next && next.pass();
             } else {
                 console.error("testJunctionSuccess ng");
-                taskRunner && taskRunner.miss();
+                next && next.miss();
             }
         }, "testJunctionSuccess");
 
@@ -210,14 +213,14 @@ function testJunctionSuccess(taskRunner) {
     setTimeout(function() { task2.pass(); }, Math.random() * 1000);
 }
 
-function testJunctionFail(taskRunner) {
+function testJunctionFail(next) {
     var junction = new Task(2, function(err) {
             if (err) {
                 console.log("testJunctionFail ok");
-                taskRunner && taskRunner.pass();
+                next && next.pass();
             } else {
                 console.error("testJunctionFail ng");
-                taskRunner && taskRunner.miss();
+                next && next.miss();
             }
         });
 
@@ -230,7 +233,7 @@ function testJunctionFail(taskRunner) {
     setTimeout(function() { task2.miss(); }, Math.random() * 1000);
 }
 
-function testJunctionWithArguments(taskRunner) {
+function testJunctionWithArguments(next) {
     function callback(err,    // null
                       args) { // [task1_args, task2_args] -> [[1,2], [3,4]]
         // array.flatten(merge) and sort
@@ -242,10 +245,10 @@ function testJunctionWithArguments(taskRunner) {
 
         if (flattenValues + "" === "1,2,3,4") {
             console.log("testJunctionWithArguments ok");
-            taskRunner && taskRunner.pass();
+            next && next.pass();
         } else {
             console.error("testJunctionWithArguments ng");
-            taskRunner && taskRunner.miss();
+            next && next.miss();
         }
     }
 
@@ -257,5 +260,59 @@ function testJunctionWithArguments(taskRunner) {
     setTimeout(function() { task1.pass(2); }, Math.random() * 1000);
     setTimeout(function() { task2.pass(3); }, Math.random() * 1000);
     setTimeout(function() { task2.pass(4); }, Math.random() * 1000);
+}
+
+function testDump(next) {
+    function callback(err, args) {
+    }
+    var task1 = new Task(1, callback, "task1");
+    var task2 = new Task(1, callback, "task1");
+    var task3 = new Task(1, callback, "task1");
+
+    var result = Task.dump("task1");
+
+    if (result) {
+        console.log("testDump ok");
+        next && next.pass();
+    } else {
+        console.log("testDump ng");
+        next && next.miss();
+    }
+}
+
+function testDumpAll(next) {
+    function callback(err, args) {
+    }
+    var task1 = new Task(1, callback, "task1");
+    var task2 = new Task(1, callback, "task1");
+    var task3 = new Task(1, callback, "task1");
+
+    var result = Task.dump();
+
+    if (result) {
+        console.log("testDumpAll ok");
+        next && next.pass();
+    } else {
+        console.log("testDumpAll ng");
+        next && next.miss();
+    }
+}
+
+function testDumpMissMatch(next) {
+    function callback(err, args) {
+    }
+    var task1 = new Task(1, callback, "task1");
+    var task2 = new Task(1, callback, "task1");
+    var task3 = new Task(1, callback, "task1");
+
+    var result = Task.dump("task2");
+
+    if (!result) {
+        console.log("testDumpMissMatch ok");
+        next && next.pass();
+    } else {
+        console.log("testDumpMissMatch ng");
+        next && next.miss();
+    }
 }
 
