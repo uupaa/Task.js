@@ -5,27 +5,39 @@ new Test().add([
         testPassWithObjectKey,
         testExecuteSyncAndAsyncTask,
         testMissable,
-        testArgsKeyAccess,
+        testPayloadKeyAccess,
         testFinisedAndFailureMessage,
         testJunctionSuccess,
         testJunctionFail,
         testJunctionWithArguments,
+        testJunctionSharePayload,
+        testJunctionSharePayloadAndClear,
+        testCallback3rdArgIsTaskInstance,
         testDump,
         testDumpAll,
         testDumpMissMatch,
-    ]).run().worker();
+        testZeroTaskCount,
+    ]).run()
+/*
+      .worker(function(err, test) {
+        if (!err && typeof Task_ !== "undefined") {
+            Task = Task_;
+            new Test(test).run().worker();
+        }
+    });
+ */
 
 function testPassWithoutArgument(next) {
     var task = new Task(2, callback, "testPassWithoutArgument");
 
     task.pass();
     task.pass(); // -> done
-    task.pass("ignore"); // ignore arguments
+    task.push("ignore").pass(); // ignore arguments
 
     function callback(err,    // err = null,
-                      args) { // args = []
+                      payload) { // payload = []
 
-        if (err === null && args + "" === [] + "") {
+        if (err === null && payload.join() === "") {
             console.log("testPassWithoutArgument ok");
             next && next.pass();
         } else {
@@ -40,12 +52,12 @@ function testMissWithoutArgument(next) {
 
     task.miss();
     task.miss(); // -> done
-    task.miss("ignore"); // ignore arguments
+    task.push("ignore").miss(); // ignore arguments
 
     function callback(err,    // err = null,
-                      args) { // args = []
+                      payload) { // payload = []
 
-        if (err instanceof Error && args + "" === [] + "") {
+        if (err instanceof Error && payload.join() === "") {
             console.log("testMissWithoutArgument ok");
             next && next.pass();
         } else {
@@ -59,12 +71,12 @@ function testExitWithoutArgument(next) {
     var task = new Task(2, callback, "testExitWithoutArgument");
 
     task.exit(); // -> done
-    task.pass("ignore"); // ignore arguments
+    task.push("ignore").pass(); // ignore arguments
 
     function callback(err,    // err = null,
-                      args) { // args = []
+                      payload) { // payload = []
 
-        if (err instanceof Error && args + "" === [] + "") {
+        if (err instanceof Error && payload.join() === "") {
             console.log("testExitWithoutArgument ok");
             next && next.pass();
         } else {
@@ -77,23 +89,21 @@ function testExitWithoutArgument(next) {
 function testPassWithObjectKey(next) {
     var task = new Task(4, callback, "testPassWithObjectKey");
 
-    task.pass(0);           // arrayValue = 0
-    task.pass(1, "one");    // arrayValue = 1, objectKey = "one"
-    task.pass(2, "two");    // arrayValue = 2, objectKey = "two"
-    task.pass(3);           // arrayValue = 3
+    task.push(0).pass();
+    task.set("one", 1).pass();
+    task.set("two", 2).pass();
+    task.push(3).pass();
 
     function callback(err,    // err = null,
-                      args) { // args = [0,1,2,3]{one:1,two:2},
+                      payload) { // payload = [0, 3] + { one: 1, two: 2 },
 
-        var flattenValues = Task.flatten(args);
-        var args_left = JSON.stringify(toObject(args));
-        var args_right = JSON.stringify({ 0: 0, 1: 1, 2: 2, 3: 3, one: 1, two: 2 });
-        var values_left = flattenValues + "";
-        var values_right = [0, 1, 2, 3] + "";
+        var flattenValues = Task.flatten(payload); // [0, 3]
+        var payload_left = JSON.stringify(ObjectizedAnyArrayToObject(payload)); // { "0": 0, "1": 3, "one": 1, "two": 2 }
 
         if (err === null &&
-            args_left === args_right &&
-            values_left === values_right) {
+            flattenValues.join() === [0, 3].join() &&
+            payload_left === JSON.stringify({ "0": 0, "1": 3, "one": 1, "two": 2 })) {
+
             console.log("testPassWithObjectKey ok");
             next && next.pass();
         } else {
@@ -102,7 +112,7 @@ function testPassWithObjectKey(next) {
         }
     }
 
-    function toObject(any) { // @arg MixedArray/Object: [0,1,2]+{a:1} or {0:0,1:1,2:2,a:1}
+    function ObjectizedAnyArrayToObject(any) { // @arg ObjectizedAnyArray|Object: [0, 1, 2] + { a: 1 } or { 0: 0, 1: 1, 2: 2, a: 1 }
         return Object.keys(any).reduce(function(prev, key) {
             prev[key] = any[key];
             return prev;
@@ -116,13 +126,13 @@ function testExecuteSyncAndAsyncTask(next) { // task sync 4 events
 
 
     // sync task
-    [1,2,3].forEach(function(value) { task.pass(value); });
+    [1,2,3].forEach(function(value) { task.push(value).pass(); });
 
     // async task
-    setTimeout(function() { task.pass(4); }, 100);
+    setTimeout(function() { task.push(4).pass(); }, 100);
 
-    function callback(err, args) { // err = null, args = [1,2,3,4]
-        if (args.join() === testResult + "") {
+    function callback(err, payload) { // err = null, payload = [1,2,3,4]
+        if ( payload.join() === testResult.join() ) {
             console.log("testExecuteSyncAndAsyncTask ok");
             next && next.pass();
         } else {
@@ -135,14 +145,14 @@ function testExecuteSyncAndAsyncTask(next) { // task sync 4 events
 function testMissable(next) {
     var task = new Task(4, callback, "testMissable").missable(2);
 
-    setTimeout(function() { task.pass(1); }, Math.random() * 10);
-    setTimeout(function() { task.pass(2); }, Math.random() * 10);
-    setTimeout(function() { task.pass(3); }, Math.random() * 10);
-    setTimeout(function() { task.miss(4); }, Math.random() * 10);
-    setTimeout(function() { task.miss(5); }, Math.random() * 10);
-    setTimeout(function() { task.pass(6); }, Math.random() * 10);
+    setTimeout(function() { task.push(1).pass(); }, Math.random() * 10);
+    setTimeout(function() { task.push(2).pass(); }, Math.random() * 10);
+    setTimeout(function() { task.push(3).pass(); }, Math.random() * 10);
+    setTimeout(function() { task.push(4).miss(); }, Math.random() * 10);
+    setTimeout(function() { task.push(5).miss(); }, Math.random() * 10);
+    setTimeout(function() { task.push(6).pass(); }, Math.random() * 10);
 
-    function callback(err, args) {
+    function callback(err, payload) {
         if (err) {
             console.error("testMissable ng");
             next && next.miss();
@@ -153,33 +163,31 @@ function testMissable(next) {
     }
 }
 
-// args[key] access.
-function testArgsKeyAccess(next) {
+// payload[key] access.
+function testPayloadKeyAccess(next) {
     var task4 = new Task(3, function(err,
-                                     args) { // args -> ["value1", "value2", "value3"] + { key1: "value1", key2: "value2" }
-            if (args[0] === "value1" &&
-                args[1] === "value2" &&
-                args[2] === "value3" &&
-                args.length === 3 &&
-                args.key1 === "value1" &&
-                args.key2 === "value2") {
+                                     payload) { // ["value0"] + { key1: "value1", key2: "value2" }
+            if (payload[0] === "value0" &&
+                payload.length === 1 &&
+                payload.key1 === "value1" &&
+                payload.key2 === "value2") {
 
-                console.log("testArgsKeyAccess ok");
+                console.log("testPayloadKeyAccess ok");
                 next && next.pass();
             } else {
-                console.error("testArgsKeyAccess ng");
+                console.error("testPayloadKeyAccess ng");
                 next && next.miss();
             }
-        }, "testArgsKeyAccess");
+        }, "testPayloadKeyAccess");
 
-    task4.pass("value1", "key1"); // { key1: "value1" }
-    task4.pass("value2", "key2"); // { key2: "value2" }
-    task4.pass("value3");
+    task4.set("key1", "value1").pass(); // { key1: "value1" }
+    task4.set("key2", "value2").pass(); // { key2: "value2" }
+    task4.push("value0").pass();
 }
 
 function testFinisedAndFailureMessage(next) {
     var task = new Task(1, function(err,    // Error("fail reason")
-                                    args) { // ["value"] + { key: "value" }
+                                    payload) { // ["value"] + { key: "value" }
             if (err && err.message === "fail reason") {
                 console.log("testFinisedAndFailureMessage ok");
                 next && next.pass();
@@ -190,11 +198,11 @@ function testFinisedAndFailureMessage(next) {
         }, "testFinisedAndFailureMessage");
 
     task.message("ignore").
-         message("fail reason").miss("value", "key"); // { key: "value" }
+         message("fail reason").set("key", "value").miss(); // { key: "value" }
 }
 
 function testJunctionSuccess(next) {
-    var junction = new Task(2, function(err, args) {
+    var junction = new Task(2, function(err, payload) {
             if (!err) {
                 console.log("testJunctionSuccess ok");
                 next && next.pass();
@@ -235,15 +243,15 @@ function testJunctionFail(next) {
 
 function testJunctionWithArguments(next) {
     function callback(err,    // null
-                      args) { // [task1_args, task2_args] -> [[1,2], [3,4]]
+                      payload) { // [task1_payload, task2_payload] -> [[1,2], [3,4]]
         // array.flatten(merge) and sort
         //
         //      [  [1,2],    [3,4]    ] ->  [1, 2, 3, 4]
         //         ------    -----          ------------
         //       task1_arg  task2_arg      flattenValues
-        var flattenValues = Task.flatten(args).sort();
+        var flattenValues = Task.flatten(payload).sort();
 
-        if (flattenValues + "" === "1,2,3,4") {
+        if (flattenValues.join() === "1,2,3,4") {
             console.log("testJunctionWithArguments ok");
             next && next.pass();
         } else {
@@ -256,14 +264,95 @@ function testJunctionWithArguments(next) {
     var task1 = new Task(2, junction);
     var task2 = new Task(2, junction);
 
-    setTimeout(function() { task1.pass(1); }, Math.random() * 1000);
-    setTimeout(function() { task1.pass(2); }, Math.random() * 1000);
-    setTimeout(function() { task2.pass(3); }, Math.random() * 1000);
-    setTimeout(function() { task2.pass(4); }, Math.random() * 1000);
+    setTimeout(function() { task1.push(1).pass(); }, Math.random() * 1000);
+    setTimeout(function() { task1.push(2).pass(); }, Math.random() * 1000);
+    setTimeout(function() { task2.push(3).pass(); }, Math.random() * 1000);
+    setTimeout(function() { task2.push(4).pass(); }, Math.random() * 1000);
+}
+
+function testJunctionSharePayload(next) {
+    function callback(err,     // null
+                      payload, // [ "SHARE PAYLOAD", 1.1, 2.2, 3.3, 4.4 ] + { a: 1, b: 2, c: 3, d: 4 }
+                      task) {  // junction
+
+        if (payload.join() === "SHARE PAYLOAD,1.1,2.2,3.3,4.4" &&
+            task === junction) {
+            console.log("testJunctionSharePayload ok");
+            next && next.pass();
+        } else {
+            console.error("testJunctionSharePayload ng");
+            next && next.miss();
+        }
+    }
+
+    var junction = new Task(2, callback);
+    junction.push("SHARE PAYLOAD");
+
+    var task1 = new Task(2, junction);
+    var task2 = new Task(2, junction);
+
+    task1.push(1.1).set("a", 1).pass();
+    task1.push(2.2).set("b", 2).pass();
+    task2.push(3.3).set("c", 3).pass();
+    task2.push(4.4).set("d", 4).pass();
+}
+
+function testJunctionSharePayloadAndClear(next) {
+    function callback(err,     // null
+                      payload, // [ 4.4 ] + { d: 4 }
+                      task) {  // junction
+
+debugger;
+        if (task === junction &&
+            payload.join() === "4.4" &&
+            payload.d === 4) {
+            console.log("testJunctionSharePayloadAndClear ok");
+            next && next.pass();
+        } else {
+            console.error("testJunctionSharePayloadAndClear ng");
+            next && next.miss();
+        }
+    }
+
+debugger;
+    var junction = new Task(2, callback);
+    junction.push("SHARE PAYLOAD");
+
+    var task1 = new Task(2, junction);
+    var task2 = new Task(2, junction);
+
+    junction.payload();
+    task1.payload();
+    task2.payload();
+
+    task1.push(1.1).set("a", 1).pass();
+    task1.push(2.2).set("b", 2).pass();
+    task2.push(3.3).set("c", 3).pass();
+    task2.clear();
+    task2.push(4.4).set("d", 4).pass();
+}
+
+function testCallback3rdArgIsTaskInstance(next) {
+    function callback(err, payload, task) {
+
+        if (task === junction) {
+            console.log("testCallback3rdArgIsTaskInstance ok");
+            next && next.pass();
+        } else {
+            console.error("testCallback3rdArgIsTaskInstance ng");
+            next && next.miss();
+        }
+    }
+    var junction = new Task(2, callback);
+    var task1 = new Task(1, junction);
+    var task2 = new Task(1, junction);
+
+    task1.pass();
+    task2.pass();
 }
 
 function testDump(next) {
-    function callback(err, args) {
+    function callback(err, payload) {
     }
     var task1 = new Task(1, callback, "task1");
     var task2 = new Task(1, callback, "task1");
@@ -275,13 +364,13 @@ function testDump(next) {
         console.log("testDump ok");
         next && next.pass();
     } else {
-        console.log("testDump ng");
+        console.error("testDump ng");
         next && next.miss();
     }
 }
 
 function testDumpAll(next) {
-    function callback(err, args) {
+    function callback(err, payload) {
     }
     var task1 = new Task(1, callback, "task1");
     var task2 = new Task(1, callback, "task1");
@@ -293,13 +382,13 @@ function testDumpAll(next) {
         console.log("testDumpAll ok");
         next && next.pass();
     } else {
-        console.log("testDumpAll ng");
+        console.error("testDumpAll ng");
         next && next.miss();
     }
 }
 
 function testDumpMissMatch(next) {
-    function callback(err, args) {
+    function callback(err, payload) {
     }
     var task1 = new Task(1, callback, "task1");
     var task2 = new Task(1, callback, "task1");
@@ -307,12 +396,25 @@ function testDumpMissMatch(next) {
 
     var result = Task.dump("task2");
 
-    if (!result) {
+    if (!Object.keys(result).length) {
         console.log("testDumpMissMatch ok");
         next && next.pass();
     } else {
-        console.log("testDumpMissMatch ng");
+        console.error("testDumpMissMatch ng");
         next && next.miss();
     }
+}
+
+function testZeroTaskCount(next) {
+    function callback(err, payload) {
+        if (!err) {
+            console.log("testZeroTaskCount ok");
+            next && next.pass();
+        } else {
+            console.error("testZeroTaskCount ng");
+            next && next.miss();
+        }
+    }
+    var task1 = new Task(0, callback);
 }
 
