@@ -1,6 +1,6 @@
 {
   "name":           "uupaa.task.js",
-  "version":        "0.8.1",
+  "version":        "0.8.2",
   "description":    "Counter based task executor.",
   "url":            "https://github.com/uupaa/Task.js",
   "keywords":       ["async", "task", "flow", "util", "uupaa"],
@@ -13,7 +13,11 @@
     "start":        "node node_modules/uupaa.minify.js --keep --output ./lib/Task.min.js ./lib/Task.js",
     "test":         "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js; open test/index.html"
   },
+  "dependencies": {
+    "uupaa.mappedarray.js": ""
+  },
   "devDependencies": {
+    "uupaa.mappedarray.js": "",
     "uupaa.test.js":    "",
     "uupaa.help.js":    "",
     "uupaa.minify.js":  ""
