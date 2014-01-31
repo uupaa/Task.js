@@ -16,12 +16,16 @@ new Test().add([
         testDump,
         testDumpAll,
         testDumpMissMatch,
+        testDrop,
         testZeroTaskCount,
     ]).run()
       .worker(function(err, test) {
-        if (!err && typeof Task_ !== "undefined") {
-            Task = Task_;
-            new Test(test).run().worker();
+        if (!err) {
+            var undo = Test.swap(Task, Task_);
+
+            new Test(test).run(function(err, test) {
+                undo = Test.undo(undo);
+            });
         }
     });
 
@@ -389,6 +393,25 @@ function testDumpMissMatch(next) {
         next && next.pass();
     } else {
         console.error("testDumpMissMatch ng");
+        next && next.miss();
+    }
+}
+
+function testDrop(next) {
+    function callback(err, buffer) {
+    }
+    var task1 = new Task(1, callback, { prefix: "task1" });
+    var task2 = new Task(1, callback, { prefix: "task1" });
+    var task3 = new Task(1, callback, { prefix: "task1" });
+
+    Task.drop();
+    var result = Task.dump("task2");
+
+    if (!Object.keys(result).length) {
+        console.log("testDrop ok");
+        next && next.pass();
+    } else {
+        console.error("testDrop ng");
         next && next.miss();
     }
 }
