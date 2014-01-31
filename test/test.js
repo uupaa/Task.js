@@ -39,7 +39,8 @@ function testPassWithoutArgument(next) {
     function callback(err,      // err = null,
                       buffer) { // buffer = []
 
-        if (err === null && buffer.get().join() === "") {
+      //if (err === null && buffer.get().join() === "") {
+        if (err === null && buffer.valueOf().join() === "") {
             console.log("testPassWithoutArgument ok");
             next && next.pass();
         } else {
@@ -50,7 +51,7 @@ function testPassWithoutArgument(next) {
 }
 
 function testMissWithoutArgument(next) {
-    var task = new Task(2, callback, { prefix: "testMissWithoutArgument" });
+    var task = new Task(2, callback, { prefix: "testMissWithoutArgument", buffer: new MappedArray() });
 
     task.miss();
     task.miss(); // -> done
@@ -59,7 +60,8 @@ function testMissWithoutArgument(next) {
     function callback(err,      // err = null,
                       buffer) { // buffer = []
 
-        if (err instanceof Error && buffer.get().join() === "") {
+      //if (err instanceof Error && buffer.get().join() === "") {
+        if (err instanceof Error && buffer.valueOf().join() === "") {
             console.log("testMissWithoutArgument ok");
             next && next.pass();
         } else {
@@ -70,7 +72,7 @@ function testMissWithoutArgument(next) {
 }
 
 function testExitWithoutArgument(next) {
-    var task = new Task(2, callback, { prefix: "testExitWithoutArgument" });
+    var task = new Task(2, callback, { prefix: "testExitWithoutArgument", buffer: new MappedArray() });
 
     task.exit(); // -> done
     task.push("ignore").pass(); // ignore arguments
@@ -78,7 +80,8 @@ function testExitWithoutArgument(next) {
     function callback(err,      // err = null,
                       buffer) { // buffer = []
 
-        if (err instanceof Error && buffer.get().join() === "") {
+      //if (err instanceof Error && buffer.get().join() === "") {
+        if (err instanceof Error && buffer.valueOf().join() === "") {
             console.log("testExitWithoutArgument ok");
             next && next.pass();
         } else {
@@ -89,7 +92,7 @@ function testExitWithoutArgument(next) {
 }
 
 function testPassWithObjectKey(next) {
-    var task = new Task(4, callback, { prefix: "testPassWithObjectKey" });
+    var task = new Task(4, callback, { prefix: "testPassWithObjectKey", buffer: new MappedArray() });
 
     task.push(0).pass();
     task.set("one", 1).pass();
@@ -126,7 +129,8 @@ function testExecuteSyncAndAsyncTask(next) { // task sync 4 events
     setTimeout(function() { task.push(4).pass(); }, 100);
 
     function callback(err, buffer) { // err = null, buffer = [1,2,3,4]
-        if ( buffer.get().join() === testResult.join() ) {
+      //if ( buffer.join() === testResult.join() ) {
+        if ( buffer.valueOf().join() === testResult.join() ) {
             console.log("testExecuteSyncAndAsyncTask ok");
             next && next.pass();
         } else {
@@ -160,7 +164,8 @@ function testMissable(next) {
 function testBufferKeyAccess(next) {
     var task4 = new Task(3, function(err,
                                      buffer) { // ["value0"] + { key1: "value1", key2: "value2" }
-            var buf = buffer.get();
+          //var buf = buffer.get();
+            var buf = buffer.valueOf();
 
             if (buf[0] === "value0" &&
                 buf.length === 1 &&
@@ -173,7 +178,7 @@ function testBufferKeyAccess(next) {
                 console.error("testBufferKeyAccess ng");
                 next && next.miss();
             }
-        }, { prefix: "testBufferKeyAccess" });
+        }, { prefix: "testBufferKeyAccess", buffer: new MappedArray() });
 
     task4.set("key1", "value1").pass(); // { key1: "value1" }
     task4.set("key2", "value2").pass(); // { key2: "value2" }
@@ -241,7 +246,8 @@ function testJunctionWithSharedBuffer(next) {
     function callback(err,      // null
                       buffer) { // [1,2,3,4]
 
-        if (buffer.get().sort().join() === "1,2,3,4") {
+      //if (buffer.get().sort().join() === "1,2,3,4") {
+        if (buffer.valueOf().sort().join() === "1,2,3,4") {
             console.log("testJunctionWithSharedBuffer ok");
             next && next.pass();
         } else {
@@ -267,7 +273,8 @@ function testJunctionWithSharedBuffer2(next) {
                       buffer, // [ "SHARE PAYLOAD", 1.1, 2.2, 3.3, 4.4 ] + { a: 1, b: 2, c: 3, d: 4 }
                       task) { // junction
 
-        if (buffer.get().join() === "SHARE PAYLOAD,1.1,2.2,3.3,4.4" &&
+      //if (buffer.get().join() === "SHARE PAYLOAD,1.1,2.2,3.3,4.4" &&
+        if (buffer.valueOf().join() === "SHARE PAYLOAD,1.1,2.2,3.3,4.4" &&
             task === junction) {
             console.log("testJunctionWithSharedBuffer2 ok");
             next && next.pass();
@@ -298,8 +305,10 @@ function testJunctionShareBufferAndClear(next) {
                       task) {  // junction
 
         if (task === junction &&
-            buffer.get().join() === "4.4" &&
-            buffer.get().d === 4) {
+          //buffer.get().join() === "4.4" &&
+          //buffer.get().d === 4) {
+            buffer.valueOf().join() === "4.4" &&
+            buffer.valueOf().d === 4) {
             console.log("testJunctionShareBufferAndClear ok");
             next && next.pass();
         } else {
@@ -335,7 +344,7 @@ function testCallback3rdArgIsTaskInstance(next) {
             next && next.miss();
         }
     }
-    var junction = new Task(2, callback);
+    var junction = new Task(2, callback, { buffer: new MappedArray() });
     var task1 = new Task(1, junction);
     var task2 = new Task(1, junction);
 
