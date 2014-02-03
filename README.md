@@ -39,7 +39,7 @@ $ npm test
 $ node
 
     var Task = require("uupaa.task.js"); // [!] need ".js"
-    var task = new Task(2, function(err, args) {
+    var task = new Task(2, function(err) {
         console.log("task done");
     });
     task.pass();
@@ -51,7 +51,7 @@ $ node
 ```html
 <script src="lib/Task.js"></script>
 <script>
-var task = new Task(2, function(err, args) {
+var task = new Task(2, function(err) {
     console.log("task done");
 });
 task.pass();
