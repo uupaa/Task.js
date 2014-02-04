@@ -9,6 +9,7 @@ new Test().add([
         testFinisedAndFailureMessage,
         testJunctionSuccess,
         testJunctionFail,
+        testJunctionWithSelfSharedBuffer,
         testJunctionWithSharedBuffer,
         testJunctionWithSharedBuffer2,
         testCallback3rdArgIsTaskInstance,
@@ -29,7 +30,7 @@ new Test().add([
     });
 
 function testPassWithoutArgument(next) {
-    var task = new Task(2, callback, { prefix: "testPassWithoutArgument" });
+    var task = new Task(2, callback, { name: "testPassWithoutArgument" });
 
     task.pass();
     task.pass(); // -> done
@@ -48,8 +49,7 @@ function testPassWithoutArgument(next) {
 }
 
 function testMissWithoutArgument(next) {
-    var taskBuffer = [];
-    var task = new Task(2, callback, { prefix: "testMissWithoutArgument", buffer: taskBuffer });
+    var task = new Task(2, callback, { name: "testMissWithoutArgument" });
 
     task.miss();
     task.miss(); // -> done
@@ -68,8 +68,7 @@ function testMissWithoutArgument(next) {
 }
 
 function testExitWithoutArgument(next) {
-    var taskBuffer = [];
-    var task = new Task(2, callback, { prefix: "testExitWithoutArgument", buffer: taskBuffer });
+    var task = new Task(2, callback, { name: "testExitWithoutArgument" });
 
     task.exit(); // -> done
     task.push("ignore").pass(); // ignore arguments
@@ -87,8 +86,7 @@ function testExitWithoutArgument(next) {
 }
 
 function testPassWithObjectKey(next) {
-    var taskBuffer = [];
-    var task = new Task(4, callback, { prefix: "testPassWithObjectKey", buffer: taskBuffer });
+    var task = new Task(4, callback, { name: "testPassWithObjectKey" });
 
     task.push(0).pass();
     task.set("one", 1).pass();
@@ -114,7 +112,7 @@ function testPassWithObjectKey(next) {
 }
 
 function testExecuteSyncAndAsyncTask(next) { // task sync 4 events
-    var task = new Task(4, callback, { prefix: "testExecuteSyncAndAsyncTask" });
+    var task = new Task(4, callback, { name: "testExecuteSyncAndAsyncTask" });
     var testResult = [1, 2, 3, 4];
 
     // sync task
@@ -135,7 +133,7 @@ function testExecuteSyncAndAsyncTask(next) { // task sync 4 events
 }
 
 function testMissable(next) {
-    var task = new Task(4, callback, { prefix: "testMissable" }).missable(2);
+    var task = new Task(4, callback, { name: "testMissable" }).missable(2);
 
     setTimeout(function() { task.push(1).pass(); }, Math.random() * 10);
     setTimeout(function() { task.push(2).pass(); }, Math.random() * 10);
@@ -156,7 +154,6 @@ function testMissable(next) {
 }
 
 function testBufferKeyAccess(next) {
-    var taskBuffer = [];
     var task4 = new Task(3, function(err, buffer) { // ["value0"] + { key1: "value1", key2: "value2" }
             var buf = buffer;
 
@@ -171,7 +168,7 @@ function testBufferKeyAccess(next) {
                 console.error("testBufferKeyAccess ng");
                 next && next.miss();
             }
-        }, { prefix: "testBufferKeyAccess", buffer: taskBuffer });
+        }, { name: "testBufferKeyAccess" });
 
     task4.set("key1", "value1").pass(); // { key1: "value1" }
     task4.set("key2", "value2").pass(); // { key2: "value2" }
@@ -188,7 +185,7 @@ function testFinisedAndFailureMessage(next) {
                 console.error("testFinisedAndFailureMessage ng");
                 next && next.miss();
             }
-        }, { prefix: "testFinisedAndFailureMessage" });
+        }, { name: "testFinisedAndFailureMessage" });
 
 
     task.message("ignore").
@@ -204,7 +201,7 @@ function testJunctionSuccess(next) {
                 console.error("testJunctionSuccess ng");
                 next && next.miss();
             }
-        }, { prefix: "testJunctionSuccess" });
+        }, { name: "testJunctionSuccess" });
 
     var task1 = new Task(2, junction);
     var task2 = new Task(2, junction);
@@ -235,6 +232,30 @@ function testJunctionFail(next) {
     setTimeout(function() { task2.miss(); }, Math.random() * 1000);
 }
 
+function testJunctionWithSelfSharedBuffer(next) {
+    function callback(err, buffer) { // [1,2,3,4]
+
+        if (buffer.sort().join() === "1,2,3,4") {
+            console.log("testJunctionWithSelfSharedBuffer ok");
+            next && next.pass();
+        } else {
+            console.error("testJunctionWithSelfSharedBuffer ng");
+            next && next.miss();
+        }
+    }
+
+    var taskBuffer = [];
+
+    var junction = new Task(2, callback, { buffer: taskBuffer });
+    var task1    = new Task(2, junction, { buffer: taskBuffer });
+    var task2    = new Task(2, junction, { buffer: taskBuffer });
+
+    setTimeout(function() { task1.push(1).pass(); }, Math.random() * 1000);
+    setTimeout(function() { task1.push(2).pass(); }, Math.random() * 1000);
+    setTimeout(function() { task2.push(3).pass(); }, Math.random() * 1000);
+    setTimeout(function() { task2.push(4).pass(); }, Math.random() * 1000);
+}
+
 function testJunctionWithSharedBuffer(next) {
     function callback(err, buffer) { // [1,2,3,4]
 
@@ -247,11 +268,9 @@ function testJunctionWithSharedBuffer(next) {
         }
     }
 
-    var taskBuffer = [];
-
-    var junction = new Task(2, callback, { buffer: taskBuffer });
-    var task1    = new Task(2, junction, { buffer: taskBuffer });
-    var task2    = new Task(2, junction, { buffer: taskBuffer });
+    var junction = new Task(2, callback);
+    var task1    = new Task(2, junction);
+    var task2    = new Task(2, junction);
 
     setTimeout(function() { task1.push(1).pass(); }, Math.random() * 1000);
     setTimeout(function() { task1.push(2).pass(); }, Math.random() * 1000);
@@ -274,13 +293,16 @@ function testJunctionWithSharedBuffer2(next) {
         }
     }
 
-    var taskBuffer = [];
-    var junction = new Task(2, callback, { buffer: taskBuffer });
+  //var taskBuffer = [];
+  //var junction = new Task(2, callback, { buffer: taskBuffer });
+    var junction = new Task(2, callback);
 
     junction.push("SHARE PAYLOAD");
 
-    var task1 = new Task(2, junction, { buffer: taskBuffer });
-    var task2 = new Task(2, junction, { buffer: taskBuffer });
+  //var task1 = new Task(2, junction, { buffer: taskBuffer });
+  //var task2 = new Task(2, junction, { buffer: taskBuffer });
+    var task1 = new Task(2, junction);
+    var task2 = new Task(2, junction);
 
     task1.push(1.1).set("a", 1).pass();
     task1.push(2.2).set("b", 2).pass();
@@ -299,8 +321,7 @@ function testCallback3rdArgIsTaskInstance(next) {
             next && next.miss();
         }
     }
-    var taskBuffer = [];
-    var junction = new Task(2, callback, { buffer: taskBuffer });
+    var junction = new Task(2, callback);
     var task1 = new Task(1, junction);
     var task2 = new Task(1, junction);
 
@@ -311,31 +332,43 @@ function testCallback3rdArgIsTaskInstance(next) {
 function testDump(next) {
     function callback(err, buffer) {
     }
-    var task1 = new Task(1, callback, { prefix: "task1" });
-    var task2 = new Task(1, callback, { prefix: "task1" });
-    var task3 = new Task(1, callback, { prefix: "task1" });
+    var task1 = new Task(1, callback, { name: "task1" });
+    var task2 = new Task(1, callback, { name: "task1" });
+    var task3 = new Task(1, callback, { name: "task1" });
 
     var result = Task.dump("task1");
 
-    if (result) {
-        console.log("testDump ok");
-        next && next.pass();
-    } else {
-        console.error("testDump ng");
-        next && next.miss();
+    if (Object.keys(result).length === 3) {
+        var r = result[Object.keys(result)[0]];
+
+        if ("junction" in r &&
+            "taskCount" in r &&
+            "missableCount" in r &&
+            "passedCount" in r &&
+            "missedCount" in r &&
+            "state" in r) {
+
+            console.log("testDump ok");
+            next && next.pass();
+            return
+        }
     }
+    console.error("testDump ng");
+    next && next.miss();
 }
 
 function testDumpAll(next) {
     function callback(err, buffer) {
     }
-    var task1 = new Task(1, callback, { prefix: "task1" });
-    var task2 = new Task(1, callback, { prefix: "task1" });
-    var task3 = new Task(1, callback, { prefix: "task1" });
+
+    Task.drop();
+    var task1 = new Task(1, callback, { name: "task1" });
+    var task2 = new Task(1, callback, { name: "task1" });
+    var task3 = new Task(1, callback, { name: "task1" });
 
     var result = Task.dump();
 
-    if (result) {
+    if (Object.keys(result).length === 3) {
         console.log("testDumpAll ok");
         next && next.pass();
     } else {
@@ -347,9 +380,9 @@ function testDumpAll(next) {
 function testDumpMissMatch(next) {
     function callback(err, buffer) {
     }
-    var task1 = new Task(1, callback, { prefix: "task1" });
-    var task2 = new Task(1, callback, { prefix: "task1" });
-    var task3 = new Task(1, callback, { prefix: "task1" });
+    var task1 = new Task(1, callback, { name: "task1" });
+    var task2 = new Task(1, callback, { name: "task1" });
+    var task3 = new Task(1, callback, { name: "task1" });
 
     var result = Task.dump("task2");
 
@@ -365,9 +398,9 @@ function testDumpMissMatch(next) {
 function testDrop(next) {
     function callback(err, buffer) {
     }
-    var task1 = new Task(1, callback, { prefix: "task1" });
-    var task2 = new Task(1, callback, { prefix: "task1" });
-    var task3 = new Task(1, callback, { prefix: "task1" });
+    var task1 = new Task(1, callback, { name: "task1" });
+    var task2 = new Task(1, callback, { name: "task1" });
+    var task3 = new Task(1, callback, { name: "task1" });
 
     Task.drop();
     var result = Task.dump("task2");
