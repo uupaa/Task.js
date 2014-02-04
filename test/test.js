@@ -1,4 +1,5 @@
 new Test().add([
+        // --- Task ---
         testPassWithoutArgument,
         testMissWithoutArgument,
         testExitWithoutArgument,
@@ -18,6 +19,18 @@ new Test().add([
         testDumpMissMatch,
         testDrop,
         testZeroTaskCount,
+        // --- Task.run ---
+        testSharedBuffer,
+        testNoTask,
+        testTaskCancel,
+        testBasicFunction,
+        testParallelExecution,
+        testDelay,
+        testZeroDelay,
+        testArrayTask,
+        testArrayWithRoute,
+        testMapWithoutRoute,
+        testArgs,
     ]).run()
       .worker(function(err, test) {
         if (!err) {
@@ -426,4 +439,229 @@ function testZeroTaskCount(next) {
     }
     var task1 = new Task(0, callback);
 }
+
+function testSharedBuffer(next) {
+    var taskMap = {
+            task1: function(task) { task.set("key1", "value"); task.pass(); },
+            task2: function(task) { task.push("value2");       task.pass(); },
+        };
+
+    var junction = new Task(2, function(err, buffer, junction) {
+            if (Task.flatten(buffer).join() === "value2,value2") {
+                console.log("testSharedBuffer ok");
+                next && next.pass();
+            } else {
+                console.log("testSharedBuffer ng");
+                next && next.miss();
+            }
+        });
+
+    Task.run("task1 > 1000 > task2", taskMap, junction);
+    Task.run("task1 > task2 > 1000", taskMap, junction);
+}
+
+function testNoTask(next) {
+    try {
+        Task.run(" > ", {
+
+        }, function() {
+        });
+
+        console.log("testNoTask ok");
+        next && next.pass();
+    } catch(o_o) {
+        console.log("testNoTask ng");
+        next && next.miss();
+    }
+}
+
+function testTaskCancel(next) {
+
+    var task = Task.run("1000 > 1000 > 1000", {
+
+    }, function(err, buffer, task) {
+        if (err && err.message === "exit task") { // exit task
+            console.log("testTaskCancel ok");
+            next && next.pass();
+        } else {
+            console.log("testTaskCancel ng");
+            next && next.miss();
+        }
+    });
+    // task cancel(error exit)
+    setTimeout(function() {
+        console.log("1000ms after...");
+        task.message("exit task").exit();
+    }, 1000);
+}
+
+function testBasicFunction(next) {
+
+    var route = "";
+
+    Task.run("task_a > task_b > task_c", {
+        task_a: function(task) { route += "a"; task.pass(); },
+        task_b: function(task) { route += "b"; route === "ab" ? task.pass()
+                                                              : task.miss(); },
+        task_c: function(task) { route += "c"; route === "abc" ? task.pass()
+                                                               : task.miss(); },
+    }, function(err, buffer, task) {
+        if (err) {
+            console.log("testBasicFunction ng");
+            next && next.miss();
+        } else {
+            console.log("testBasicFunction ok");
+            next && next.pass();
+        }
+    });
+}
+
+function testParallelExecution(next) {
+
+    var route = "";
+
+    Task.run("task_a > task_b + task_c + task_d > task_e", {
+        task_a: function(task) { route += "a"; task.pass(); },
+        task_b: function(task) { route += "b"; /[a]/.test(route) ? task.pass()
+                                                                 : task.miss(); },
+        task_c: function(task) { route += "c"; /[a]/.test(route) ? task.pass()
+                                                                 : task.miss(); },
+        task_d: function(task) { route += "d"; /[a]/.test(route) ? task.pass()
+                                                                 : task.miss(); },
+        task_e: function(task) { route += "e"; route.split("").sort().join("") === "abcde" ? task.pass()
+                                                                                           : task.miss() },
+    }, function(err, buffer, task) {
+        if (err) {
+            console.log("testParallelExecution ng");
+            next && next.miss();
+        } else {
+            console.log("testParallelExecution ok");
+            next && next.pass();
+        }
+    });
+}
+
+function testDelay(next) {
+
+    var route = "";
+    var last = 0;
+
+    Task.run("task_a > 1000 > task_b", {
+        task_a: function(task) { last = Date.now(); task.pass(); },
+        task_b: function(task) { Date.now() - last ? task.pass() : task.miss() },
+    }, function(err, buffer, task) {
+        if (err) {
+            console.log("testDelay ng");
+            next && next.miss();
+        } else {
+            console.log("testDelay ok");
+            next && next.pass();
+        }
+    });
+}
+
+function testZeroDelay(next) {
+
+    Task.run("0 > 0 > 0", {
+
+    }, function(err, buffer, task) {
+        if (err) {
+            console.log("testZeroDelay ng");
+            next && next.miss();
+        } else {
+            console.log("testZeroDelay ok");
+            next && next.pass();
+        }
+    });
+}
+
+function testArrayTask(next) {
+
+    var route = "";
+
+    Task.run("", [
+        function(task) { route += "a"; task.pass(); },
+        function(task) { route += "b"; route === "ab" ? task.pass()
+                                                      : task.miss(); },
+        function(task) { route += "c"; route === "abc" ? task.pass()
+                                                       : task.miss(); },
+    ], function(err, buffer, task) {
+        if (err) {
+            console.log("testArrayTask ng");
+            next && next.miss();
+        } else {
+            console.log("testArrayTask ok");
+            next && next.pass();
+        }
+    });
+}
+
+function testArrayWithRoute(next) {
+
+    var route = "";
+
+    Task.run("0 > 2 > 1", [
+        function(task) { route += "a"; task.pass(); },
+        function(task) { route += "b"; route === "acb" ? task.pass()
+                                                       : task.miss(); },
+        function(task) { route += "c"; route === "ac" ? task.pass()
+                                                      : task.miss(); },
+    ], function(err, buffer, task) {
+        if (err) {
+            console.log("testArrayWithRoute ng");
+            next && next.miss();
+        } else {
+            console.log("testArrayWithRoute ok");
+            next && next.pass();
+        }
+    });
+}
+
+
+function testMapWithoutRoute(next) {
+
+    var route = "";
+    var last = 0;
+
+    Task.run("task_a > task_c > task_b", {
+        task_a: function(task) { route += "a"; task.pass(); },
+        task_b: function(task) { route += "b"; route === "acb" ? task.pass()
+                                                               : task.miss(); },
+        task_c: function(task) { route += "c"; route === "ac" ? task.pass()
+                                                              : task.miss(); },
+    }, function(err, buffer, task) {
+        if (err) {
+            console.log("testMapWithoutRoute ng");
+            next && next.miss();
+        } else {
+            console.log("testMapWithoutRoute ok");
+            next && next.pass();
+        }
+    });
+}
+
+
+function testArgs(next) {
+
+    var args = { a: 1, b: 2, c: 3 };
+    var route = "";
+    var last = 0;
+
+    Task.run("task_a > task_c > task_b", {
+        task_a: function(task, args) { route += args.a; task.pass(); },
+        task_b: function(task, args) { route += args.b; route === "132" ? task.pass()
+                                                                        : task.miss(); },
+        task_c: function(task, args) { route += args.c; route === "13" ? task.pass()
+                                                                       : task.miss(); },
+    }, function(err, buffer, task) {
+        if (err) {
+            console.log("testArgs ng");
+            next && next.miss();
+        } else {
+            console.log("testArgs ok");
+            next && next.pass();
+        }
+    }, { args: args });
+}
+
 
