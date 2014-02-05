@@ -31,6 +31,7 @@ new Test().add([
         testArrayWithRoute,
         testMapWithoutRoute,
         testArgs,
+        testThrowTask,
     ]).run()
       .worker(function(err, test) {
         if (!err) {
@@ -662,6 +663,29 @@ function testArgs(next) {
             next && next.pass();
         }
     }, { args: args });
+}
+
+function testThrowTask(next) {
+    var errorMessage = "throw! throw!";
+
+    function callback(err, buffer) {
+        if (err && err.message === errorMessage) {
+            console.log("testThrowTask ok");
+            next && next.pass();
+        } else {
+            console.error("testThrowTask ng");
+            next && next.miss();
+        }
+    }
+
+    Task.run("task_a > task_b", {
+        task_a: function(task) {
+            throw new TypeError(errorMessage);
+        },
+        task_b: function(task) {
+            task.pass();
+        },
+    }, callback);
 }
 
 
