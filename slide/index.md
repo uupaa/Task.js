@@ -53,12 +53,13 @@ Task.js を導入すると、非同期処理やブラウザのサポート状況
   それらの終了を待ちたい事がよくある
 - 同期/非同期が混在すると、場当たり的に、
   一方はループで、一方はコールバックの連鎖で制御している
-- 同期/非同期に意識せずに扱いたい
-- 毎回同じようなコードを書いては捨てている気がする
+- 同期/非同期を意識せずに扱いたい
+- 毎回同じようなコードを書いて捨てている気がする
 
 ## シンプルな実装がほしい
 
-- Deferred や Promises を JavaScript に詳しくない人や、非プログラマーに説明するのは骨が折れる。
+- Deferred や Promises を JavaScript に詳しくない人や、  
+  非プログラマーに説明するのは骨が折れる
 
 ## 運用で困らないようにしたい
 
@@ -69,73 +70,18 @@ Task.js を導入すると、非同期処理やブラウザのサポート状況
 - どの非同期処理で止まっているか、原因を素早く特定できないと困る
 - コマンド一発で、実行中の同期/非同期関数を一覧したい
 
-## これらを踏まえて…
+##
 
-Task.js の機能を見て行きましょう
+Task.js はこれら全ての  
+**Needs** と **Wants** を満たしてくれます
 
-<!-- ----------------------------------------------------- -->
-# install and import script
-
-## github
-
-```sh
-https://github.com/uupaa/Task.js
-```
-
-## npm install
-```sh
-$ npm install uupaa.task.js
-```
-
-- モジュール名が **uupaa.** で始まっている理由について
-    - npm モジュール名は先願制で、一般名詞や動詞は既に枯渇しています
-    - npm モジュール名には、大文字を利用できません
-    - このような理由により、致し方なく…
-    - uupaa がお供するとお考え下さい
-
-(ε・◇・)з o O ( お伴するよ〜
-
-## in Node.js
-```js
-var Task = require("uupaa.task.js");
-
-var task = new Task(1, function(err) {
-        console.log(err ? err.message : "ok");
-    });
-
-task.pass();
-```
-
-## in Browser
-
-```js
-<script src="uupaa.task.js"></script>
-
-<script>
-var task = new Task(1, function(err) {
-        console.log(err ? err.message : "ok");
-    });
-
-task.pass();
-</script>
-```
-
-## in WebWorkers
-
-```js
-importScripts("uupaa.task.js");
-
-var task = new Task(1, function(err) {
-        console.log(err ? err.message : "ok");
-    });
-
-task.pass();
-```
+<hr />
+では、Task.js の機能を見て行きましょう
 
 
 <!-- ----------------------------------------------------- -->
 
-# Task.js の基本機能
+# Task.js の基本
 
 ```js
 function callback(err) { }
@@ -145,13 +91,14 @@ function userTask2() { task.miss(); } // ユーザタスク失敗で task.miss()
 var taskCount = 2;
 var task = new Task(taskCount, callback);
 
-userTask1();                 // 同期タスク: すぐに userTask1 を呼ぶ
-setTimeout(userTask1, 1000); // 非同期タスク: 1000ms待ってから userTask1 を呼ぶ
+userTask1();                 // 同期ユーザタスク: すぐに userTask1 を呼ぶ
+setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってから userTask1 を呼ぶ
 ```
 
 ## 
 
-- 同期/非同期処理を **ユーザータスク** と呼びます
+- Task.js では、ユーザが用意する同期/非同期処理を  
+  **ユーザータスク** と呼びます
 - var task = new Task( **taskCount**, ... ) は、**task.pass()** が2回呼ばれるのを **待ちます**
 - task.pass() が2回呼ばれると、待機を終了し **callback** を呼びます
 
@@ -165,10 +112,35 @@ setTimeout(userTask1, 1000); // 非同期タスク: 1000ms待ってから userTa
 
 ## まとめ
 
-1. **new Task**(taskCount, callback)で待機開始
-2. ユーザタスク成功で **task.pass()** を呼ぶ
-3. ユーザタスク失敗で **task.miss()** を呼ぶ
+1. **new Task**(taskCount) で待機開始
+2. ユーザタスク成功で **task.pass()** を、  
+   失敗で **task.miss()** を呼ぶ
 4. 待機終了で **callback** が呼ばれる
+
+## 
+
+Task.js の基本はこれだけです。
+
+<hr />
+
+では次に 応用編です。
+
+<!-- ----------------------------------------------------- -->
+
+# Task の応用
+
+## 
+
+| 用法             | API             |
+|------------------|-----------------|
+| バッファ         | callback(buffer), task.buffer() |
+| デバッグ         | Task.dump(), Task.drop() |
+| 強制終了         | task.exit(), task.message() |
+| 待機数を拡張     | task.extend()   |
+| 失敗を許容       | task.missable() |
+| Arrayを変換      | Task.flatten(), Task.arraynize(), Task.objectize() |
+| Taskを連結       | Junction, Task.run() |
+
 
 <!-- ----------------------------------------------------- -->
 
@@ -214,48 +186,51 @@ task2.push("value2").pass();
 - task1.push("value1") は junction.push("value1") と **同じ結果** になり  
   task2.push("value2") も junction.push("value2") と同じ結果になります
 
-<!-- ----------------------------------------------------- -->
-
-# task.missable()
-
-```js
-function callback(err) { }
-
-var task = new Task(3, callback);
-
-task.missable(2);
-task.miss(); // ユーザタスク失敗(missableが2なので許容する)
-task.miss(); // ユーザタスク失敗(missableが2なので許容する)
-task.miss(); // ユーザタスク失敗(missableが2なので待機失敗) -> callback(Error)
-```
-
-##
-
-- ユーザタスクが3つあり、そのうち2回まで失敗を許容する場合は、new Task(3).<span style="color:gold">missable(2)</span> とします
-- **task.missable(n)** で失敗を許容する回数を設定できます
-- task.missable(0) の状態で **task.miss()** を一度でも呼ぶと待機失敗で終了します
-- 初期状態は task.missble(0) です
-
-
 
 <!-- ----------------------------------------------------- -->
 
-# task.extend()
+# Task.dump()
+
+## Task 一覧のダンプ
 
 ```js
-function callback(err) { }
+Task.dump();
+{
+    "anonymous@165": { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: "" }
+    "anonymous@166": { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: "" }
+    "anonymous@167": { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: "" }
+}
+```
+<!--
+<input type="button" onclick="console.log(Task.dump())" value="Task.dump()"></input>
+ -->
 
-var task = new Task(1, callback);
+- **Task.dump()** は Task のスナップショットを返します
+- 実行中の Task の一覧と状態を確認できます
 
-task.extend(1); // taskCount += 1;
-task.pass();    // ユーザタスク成功(taskCountが2なので待機する)
-task.pass();    // ユーザタスク失敗(taskCountが2なので終了する) -> callback(null)
+## Task 名による絞込
+
+```js
+var task = new Task(1, callback, { name: "TEST" });
+
+Task.dump("TEST");
+{
+    "TEST@166": { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: "" }
+}
 ```
 
-- 動的に taskCount を +1 するには、**task.extend(1)** とします
-- 次々にユーザタスクが増えるケースで使います
+- Task の第三引数で Task 名を指定し、**Task.dump(taskName)** で絞り込めます
 
-![](./assets/img/task.extend.png)
+
+## 
+
+```js
+Task.drop();
+```
+
+- <span style="color:gold">Task.drop()</span> は、スナップショットを生成するための内部的な情報を全て削除します
+- この情報は、Task の待機終了で自動的に削除されます
+- 通常利用では Task.drop() を明示的に呼ぶ必要はありません
 
 
 <!-- ----------------------------------------------------- -->
@@ -274,7 +249,6 @@ task.exit(); // 強制終了 -> callback(new Error(...))
 
 - **task.exit()** を使うと、
   taskCount や missable の状態に関わらず、待機失敗で強制終了します
-
 
 <!-- ----------------------------------------------------- -->
 
@@ -305,45 +279,44 @@ userTask(task);
 
 <!-- ----------------------------------------------------- -->
 
-# Task.dump()
-
-## タスク一覧のダンプ
+# task.extend()
 
 ```js
-Task.dump();
-{
-    "anonymous@165": { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: "" }
-    "anonymous@166": { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: "" }
-    "anonymous@167": { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: "" }
-}
+function callback(err) { }
+
+var task = new Task(1, callback);
+
+task.extend(1); // taskCount += 1;
+task.pass();    // ユーザタスク成功(taskCountが2なので待機する)
+task.pass();    // ユーザタスク失敗(taskCountが2なので終了する) -> callback(null)
 ```
 
-- **Task.dump()** は Task のスナップショットを返します
-- 実行中の Task の一覧と状態を確認できます
+- 動的に taskCount を +1 するには、**task.extend(1)** とします
+- 次々にユーザタスクが増えるケースで使います
 
-## タスク名による絞込
+![](./assets/img/task.extend.png)
+
+<!-- ----------------------------------------------------- -->
+
+# task.missable()
 
 ```js
-var task = new Task(1, callback, { name: "TEST" });
+function callback(err) { }
 
-Task.dump("TEST");
-{
-    "TEST@166": { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: "" }
-}
+var task = new Task(3, callback);
+
+task.missable(2);
+task.miss(); // ユーザタスク失敗(missableが2なので許容する)
+task.miss(); // ユーザタスク失敗(missableが2なので許容する)
+task.miss(); // ユーザタスク失敗(missableが2なので待機失敗) -> callback(Error)
 ```
 
-- Task の第三引数でタスク名を指定し、**Task.dump(タスク名)** とすることでタスク名で絞込ができます
+##
 
-
-## 
-
-```js
-Task.drop();
-```
-
-- <span style="color:gold">Task.drop()</span> は、スナップショットを生成するための内部的な情報を全て削除します
-- この情報は、タスクの待機終了で自動的に削除されます
-- 通常利用では Task.drop() を明示的に呼ぶ必要はありません
+- ユーザタスクが3つあり、そのうち2回まで失敗を許容する場合は、new Task(3).<span style="color:gold">missable(2)</span> とします
+- **task.missable(n)** で失敗を許容する回数を設定できます
+- task.missable(0) の状態で **task.miss()** を一度でも呼ぶと待機失敗で終了します
+- 初期状態は task.missble(0) です
 
 <!-- ----------------------------------------------------- -->
 
@@ -370,7 +343,7 @@ Task.flatten([ [1,2], [3,4], [ [5,6] ] ]); // -> [1, 2, 3, 4, [5, 6] ]
 
 ```js
 var array = [1,2,3];
-array["key"] = "value"
+array["key"] = "value"; // Array にプロパティを追加
 
 Task.arraynize(array); // -> [1, 2, 3] になる
 ```
@@ -382,7 +355,7 @@ Task.arraynize(array); // -> [1, 2, 3] になる
 
 ```js
 var array = [1,2,3];
-array["key"] = "value"
+array["key"] = "value"; // Array にプロパティを追加
 
 Task.objectize(array); // -> { 0: 1, 1: 2, 2: 3, key: "value" }
 ```
@@ -407,7 +380,7 @@ var task2 = new Task(1, junction);
 
 ![](./assets/img/junction.png)
 
-- 他の Task を集約する Task を <span style="color:gold">Junction(合流点)</span> と呼びます
+- 他の Task を集約する Task を **Junction(合流点)** と呼びます
 - Junction を使うと Task の上下関係を記述できます
 
 ## 
@@ -491,7 +464,7 @@ Task.run("a > b", taskMap, junction); // a を実行後に b を実行
 Task.run("c + d", taskMap, junction); // c と d を並列実行
 ```
 
-- **Task.run** は Task の前後関係を定義する機能です
+- **Task.run** は ユーザタスクの前後関係を定義する機能です
 - Task の上下関係を定義する **Junction** と Task.run は組み合わせて利用できます
 
 ## 
@@ -508,11 +481,11 @@ Task.run("task_a > task_b + task_c > task_d", {
 }, callback);
 ```
 
-- **Task.run** を使うと、Task の直列/並列動作をシンプルな記法で定義できます
-- タスク名を **`>`** と **`+`** でつなぐ事でタスクの前後間の流れを定義していきます
+- **Task.run** を使うと、ユーザタスクの直列/並列動作をシンプルな記法で定義できます
+- ユーザタスク名を **`>`** と **`+`** でつなぐ事で、ユーザタスクの前後間の流れを定義していきます
 
 
-## 並列( パラレル )タスク
+## 並列ユーザタスク
 
 ```js
 
@@ -522,10 +495,10 @@ Task.run("task_a + task_b", {
 }, callback);
 ```
 
-- 並列に実行するタスクを **`+`** でつなぐと、それらは同時に実行されます
+- 並列に実行するユーザタスク を **`+`** でつなぐと、それらは同時に実行されます
 
 
-## 直列( シリアル )タスク
+## 直列ユーザタスク
 
 ```js
 Task.run("task_a > task_b", {
@@ -534,9 +507,9 @@ Task.run("task_a > task_b", {
 }, callback);
 ```
 
-- 直列に実行するタスクを **`>`** でつなぐと、それらは順番に実行されます
+- 直列に実行するユーザタスクを **`>`** でつなぐと、それらは順番に実行されます
 
-## 遅延( ディレイ )タスク
+## 遅延ユーザタスク
 
 ```js
 Task.run("task_a > 1000 > task_b", {
@@ -545,18 +518,18 @@ Task.run("task_a > 1000 > task_b", {
 }, callback);
 ```
 
-- 数字を埋め込むと、指定した時間分だけ待機する **何もしない** タスクを生成し実行します
+- 数字を埋め込むと、指定した時間分だけ待機する **何もしない** タスクを動的に生成し実行します
 - 上記の例では、task_a 実行後に **1000ms** 待機し、その後に task_b を実行します
 
 
-## 直列タスクの省略記法
+## 直列ユーザタスクの省略記法
 
 ```js
 function task_a(task) { task.pass(); }
 function task_b(task) { task.pass(); }
 function task_c(task) { task.pass(); }
 
-// このような直列タスクは
+// このような直列ユーザタスクは
 Task.run("task_a > task_b > task_c", {
     task_a: task_a,
     task_b: task_b,
@@ -567,10 +540,10 @@ Task.run("task_a > task_b > task_c", {
 Task.run("", [task_a, task_b, task_c], callback);
 ```
 
-- タスクの配列を指定すると、順番に実行します
+- ユーザタスクの配列を指定すると、順番に実行します
 
 
-## 直列, 並列, 遅延タスクを組み合わせる
+## 直列/並列/遅延ユーザタスクを組み合わせる
 
 ```js
 Task.run("a > b + c > 1000 > d", {
@@ -581,7 +554,7 @@ Task.run("a > b + c > 1000 > d", {
 }, callback);
 ```
 
-- **`a > b + c + 1000 > d`** は、タスク a 〜 d を以下の順番で実行します
+- **`a > b + c + 1000 > d`** は、ユーザタスク a 〜 d を以下の順番で実行します
     1. a を実行します
     2. a の正常終了で、b と c を同時に実行します
     3. b と c が正常終了すると 1000ms 待機します
@@ -590,7 +563,7 @@ Task.run("a > b + c > 1000 > d", {
 
 
 
-## タスクに引数を渡す
+## ユーザタスクに引数を渡す
 
 ```js
 var args = { a: 1, b: 2, c : 3, d: 4 };
@@ -610,10 +583,10 @@ var junction = Task.run("task_a > task_b + task_c > task_d", {
        //////////////
 ```
 
-- Task.run から起動されるタスク(task_a 〜 task_d)に引数を渡すには、Task.run の第四引数に <span style="color:gold">options.args</span> を設定します
+- Task.run から起動されるユーザタスク(task_a 〜 task_d)に引数を渡すには、Task.run の第四引数に <span style="color:gold">options.args</span> を設定します
 
 
-## 直列タスクの途中で失敗すると
+## 直列ユーザタスクの途中で失敗すると
 
 ```js
 Task.run("task_a > task_b", {
@@ -622,11 +595,11 @@ Task.run("task_a > task_b", {
 }, callback);
 ```
 
-- 直列タスクの途中で失敗すると後続のタスクは実行されません
+- 直列ユーザタスクの途中で失敗すると後続のユーザタスクは実行されません
 - task_a が失敗した場合は、後続の task_b は実行しません
 
 
-## 並列タスクの一部が失敗すると
+## 並列ユーザタスクの一部が失敗すると
 
 ```js
 Task.run("task_c + task_d + task_e", {
@@ -638,7 +611,7 @@ Task.run("task_c + task_d + task_e", {
 }, callback);
 ```
 
-- 並列タスクの一部が失敗しても、同じグループに属する並列実行タスクは中断しません
+- 並列ユーザタスクの一部が失敗しても、同じグループに属する並列実行ユーザタスクは中断しません
 - task_c が途中で失敗した場合でも、task_d と task_e は中断しません
 
 
@@ -648,9 +621,19 @@ Task.run("task_c + task_d + task_e", {
 
 ## 
 
-- 非同期タスク A, B, C, D を (A, B) のグループと、(C, D) のグループに分けます
-- 2つのグループの完了を待ち合わせます
-- これらを JavaScript, jQuery.Deferred, Promise, Task.js で実装する例です
+「非同期のユーザタスク A, B, C, D を、  
+A,B のグループと C,D のグループに分け、  
+2つのグループの完了を待つ」処理を、  
+それぞれの方法で実装してみます
+
+- JavaScript
+- jQuery.Deferred
+- DOM Promise
+- Junction
+- Junction + Task.run
+
+
+
 
 
 
@@ -789,18 +772,79 @@ function waitForAsyncProcesses(finishedCallback) {
 waitForAsyncProcesses(function(err) { console.log("finished"); });
 ```
 
+<!-- ----------------------------------------------------- -->
+# install and import script
+
+## github
+
+```sh
+https://github.com/uupaa/Task.js
+```
+
+## npm install
+```sh
+$ npm install uupaa.task.js
+```
+
+- モジュール名が **uupaa.** で始まっている理由について
+    - npm モジュール名は先願制で、一般名詞や動詞は既に枯渇しています
+    - npm モジュール名には、大文字を利用できません
+    - このような理由により、致し方なく…
+    - uupaa がお供するとお考え下さい
+
+(ε・◇・)з o O ( お伴するよ〜
+
+## in Node.js
+```js
+var Task = require("uupaa.task.js");
+
+var task = new Task(1, function(err) {
+        console.log(err ? err.message : "ok");
+    });
+
+task.pass();
+```
+
+## in Browser
+
+```js
+<script src="uupaa.task.js"></script>
+
+<script>
+var task = new Task(1, function(err) {
+        console.log(err ? err.message : "ok");
+    });
+
+task.pass();
+</script>
+```
+
+## in WebWorkers
+
+```js
+importScripts("uupaa.task.js");
+
+var task = new Task(1, function(err) {
+        console.log(err ? err.message : "ok");
+    });
+
+task.pass();
+```
+
+<!-- ----------------------------------------------------- -->
+
 # まとめ
 
 ## 
 
+
 Task.js は以下の特徴を備えています
 
-- シンプルかつ柔軟です
-- 様々な環境で利用できます
-- 既存の構造を大きく改変しなくても導入できます
-- 非同期処理の都合でコードを汚さずに済みます
-- Junction で上下関係を定義し、Task.run で前後関係を定義できます
-- Junction と Task.run を組み合わせると全方位にスッキリとしたコードが書けます
+- **様々な環境で動作** します
+- 構造が **シンプル** で応用が効きます
+- 既存の構造やユーザタスクを **大きく改変しなくても導入可能** です
+- Junction で **上下関係を定義** し、Task.run で **前後関係を定義** できます
+- Junction と Task.run を組み合わせて **スッキリ** としたコードが書けます
 
 ## 
 

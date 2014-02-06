@@ -28,6 +28,7 @@
     ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + 
     '.css" type="text/css" media="print">' );
 </script>
+<script src="./assets/js/Task.js"></script>
 
 <!--[if lt IE 9]>
 <script src="lib/js/html5shiv.js"></script>
@@ -96,14 +97,14 @@
 <li>ダウンロードの完了を待ちつつアニメーションしたい</li>
 <li>いくつかの非同期処理をグルーピングし、 それらの終了を待ちたい事がよくある</li>
 <li>同期/非同期が混在すると、場当たり的に、 一方はループで、一方はコールバックの連鎖で制御している</li>
-<li>同期/非同期に意識せずに扱いたい</li>
-<li>毎回同じようなコードを書いては捨てている気がする</li>
+<li>同期/非同期を意識せずに扱いたい</li>
+<li>毎回同じようなコードを書いて捨てている気がする</li>
 </ul>
 </section>
 <section id="シンプルな実装がほしい" class="level2">
 <h2>シンプルな実装がほしい</h2>
 <ul>
-<li>Deferred や Promises を JavaScript に詳しくない人や、非プログラマーに説明するのは骨が折れる。</li>
+<li>Deferred や Promises を JavaScript に詳しくない人や、<br /> 非プログラマーに説明するのは骨が折れる</li>
 </ul>
 </section>
 <section id="運用で困らないようにしたい" class="level2">
@@ -119,69 +120,17 @@
 <li>コマンド一発で、実行中の同期/非同期関数を一覧したい</li>
 </ul>
 </section>
-<section id="これらを踏まえて" class="level2">
-<h2>これらを踏まえて…</h2>
-<p>Task.js の機能を見て行きましょう</p>
-<!-- ----------------------------------------------------- -->
-</section>
-</section>
-<section id="install-and-import-script" class="level1">
-<h1>install and import script</h1>
-<section id="github" class="level2">
-<h2>github</h2>
-<pre class="sh"><code>https://github.com/uupaa/Task.js</code></pre>
-</section>
-<section id="npm-install" class="level2">
-<h2>npm install</h2>
-<pre class="sh"><code>$ npm install uupaa.task.js</code></pre>
-<ul>
-<li>モジュール名が <strong>uupaa.</strong> で始まっている理由について
-<ul>
-<li>npm モジュール名は先願制で、一般名詞や動詞は既に枯渇しています</li>
-<li>npm モジュール名には、大文字を利用できません</li>
-<li>このような理由により、致し方なく…</li>
-<li>uupaa がお供するとお考え下さい</li>
-</ul></li>
-</ul>
-<p>(ε・◇・)з o O ( お伴するよ〜</p>
-</section>
-<section id="in-node.js" class="level2">
-<h2>in Node.js</h2>
-<pre class="js"><code>var Task = require(&quot;uupaa.task.js&quot;);
-
-var task = new Task(1, function(err) {
-        console.log(err ? err.message : &quot;ok&quot;);
-    });
-
-task.pass();</code></pre>
-</section>
-<section id="in-browser" class="level2">
-<h2>in Browser</h2>
-<pre class="js"><code>&lt;script src=&quot;uupaa.task.js&quot;&gt;&lt;/script&gt;
-
-&lt;script&gt;
-var task = new Task(1, function(err) {
-        console.log(err ? err.message : &quot;ok&quot;);
-    });
-
-task.pass();
-&lt;/script&gt;</code></pre>
-</section>
-<section id="in-webworkers" class="level2">
-<h2>in WebWorkers</h2>
-<pre class="js"><code>importScripts(&quot;uupaa.task.js&quot;);
-
-var task = new Task(1, function(err) {
-        console.log(err ? err.message : &quot;ok&quot;);
-    });
-
-task.pass();</code></pre>
+<section id="section-4" class="level2">
+<h2></h2>
+<p>Task.js はこれら全ての<br /><strong>Needs</strong> と <strong>Wants</strong> を満たしてくれます</p>
+<hr />
+<p>では、Task.js の機能を見て行きましょう</p>
 <!-- ----------------------------------------------------- -->
 
 </section>
 </section>
-<section id="task.js-の基本機能" class="level1">
-<h1>Task.js の基本機能</h1>
+<section id="task.js-の基本" class="level1">
+<h1>Task.js の基本</h1>
 <pre class="js"><code>function callback(err) { }
 function userTask1() { task.pass(); } // ユーザタスク終了で task.pass() を呼ぶ
 function userTask2() { task.miss(); } // ユーザタスク失敗で task.miss() を呼ぶ
@@ -189,17 +138,17 @@ function userTask2() { task.miss(); } // ユーザタスク失敗で task.miss()
 var taskCount = 2;
 var task = new Task(taskCount, callback);
 
-userTask1();                 // 同期タスク: すぐに userTask1 を呼ぶ
-setTimeout(userTask1, 1000); // 非同期タスク: 1000ms待ってから userTask1 を呼ぶ</code></pre>
-<section id="section-4" class="level2">
+userTask1();                 // 同期ユーザタスク: すぐに userTask1 を呼ぶ
+setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってから userTask1 を呼ぶ</code></pre>
+<section id="section-5" class="level2">
 <h2></h2>
 <ul>
-<li>同期/非同期処理を <strong>ユーザータスク</strong> と呼びます</li>
+<li>Task.js では、ユーザが用意する同期/非同期処理を<br /> <strong>ユーザータスク</strong> と呼びます</li>
 <li>var task = new Task( <strong>taskCount</strong>, ... ) は、<strong>task.pass()</strong> が2回呼ばれるのを <strong>待ちます</strong></li>
 <li>task.pass() が2回呼ばれると、待機を終了し <strong>callback</strong> を呼びます</li>
 </ul>
 </section>
-<section id="section-5" class="level2">
+<section id="section-6" class="level2">
 <h2></h2>
 <ul>
 <li>task.pass() を2回呼ぶと <strong>待機成功</strong> で終了します</li>
@@ -210,11 +159,63 @@ setTimeout(userTask1, 1000); // 非同期タスク: 1000ms待ってから userTa
 <section id="まとめ" class="level2">
 <h2>まとめ</h2>
 <ol type="1">
-<li><strong>new Task</strong>(taskCount, callback)で待機開始</li>
-<li>ユーザタスク成功で <strong>task.pass()</strong> を呼ぶ</li>
-<li>ユーザタスク失敗で <strong>task.miss()</strong> を呼ぶ</li>
+<li><strong>new Task</strong>(taskCount) で待機開始</li>
+<li>ユーザタスク成功で <strong>task.pass()</strong> を、<br /> 失敗で <strong>task.miss()</strong> を呼ぶ</li>
 <li>待機終了で <strong>callback</strong> が呼ばれる</li>
 </ol>
+</section>
+<section id="section-7" class="level2">
+<h2></h2>
+<p>Task.js の基本はこれだけです。</p>
+<hr />
+
+<p>では次に 応用編です。</p>
+<!-- ----------------------------------------------------- -->
+
+</section>
+</section>
+<section id="task-の応用" class="level1">
+<h1>Task の応用</h1>
+<section id="section-8" class="level2">
+<h2></h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">用法</th>
+<th style="text-align: left;">API</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">バッファ</td>
+<td style="text-align: left;">callback(buffer), task.buffer()</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">デバッグ</td>
+<td style="text-align: left;">Task.dump(), Task.drop()</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">強制終了</td>
+<td style="text-align: left;">task.exit(), task.message()</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">待機数を拡張</td>
+<td style="text-align: left;">task.extend()</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">失敗を許容</td>
+<td style="text-align: left;">task.missable()</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Arrayを変換</td>
+<td style="text-align: left;">Task.flatten(), Task.arraynize(), Task.objectize()</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Taskを連結</td>
+<td style="text-align: left;">Junction, Task.run()</td>
+</tr>
+</tbody>
+</table>
 <!-- ----------------------------------------------------- -->
 
 </section>
@@ -260,46 +261,48 @@ task2.push(&quot;value2&quot;).pass();</code></pre>
 
 </section>
 </section>
-<section id="task.missable" class="level1">
-<h1>task.missable()</h1>
-<pre class="js"><code>function callback(err) { }
+<section id="task.dump" class="level1">
+<h1>Task.dump()</h1>
+<section id="task-一覧のダンプ" class="level2">
+<h2>Task 一覧のダンプ</h2>
+<pre class="js"><code>Task.dump();
+{
+    &quot;anonymous@165&quot;: { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: &quot;&quot; }
+    &quot;anonymous@166&quot;: { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: &quot;&quot; }
+    &quot;anonymous@167&quot;: { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: &quot;&quot; }
+}</code></pre>
+<!--
+<input type="button" onclick="console.log(Task.dump())" value="Task.dump()"></input>
+ -->
 
-var task = new Task(3, callback);
+<ul>
+<li><strong>Task.dump()</strong> は Task のスナップショットを返します</li>
+<li>実行中の Task の一覧と状態を確認できます</li>
+</ul>
+</section>
+<section id="task-名による絞込" class="level2">
+<h2>Task 名による絞込</h2>
+<pre class="js"><code>var task = new Task(1, callback, { name: &quot;TEST&quot; });
 
-task.missable(2);
-task.miss(); // ユーザタスク失敗(missableが2なので許容する)
-task.miss(); // ユーザタスク失敗(missableが2なので許容する)
-task.miss(); // ユーザタスク失敗(missableが2なので待機失敗) -&gt; callback(Error)</code></pre>
-<section id="section-6" class="level2">
+Task.dump(&quot;TEST&quot;);
+{
+    &quot;TEST@166&quot;: { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: &quot;&quot; }
+}</code></pre>
+<ul>
+<li>Task の第三引数で Task 名を指定し、<strong>Task.dump(taskName)</strong> で絞り込めます</li>
+</ul>
+</section>
+<section id="section-9" class="level2">
 <h2></h2>
+<pre class="js"><code>Task.drop();</code></pre>
 <ul>
-<li>ユーザタスクが3つあり、そのうち2回まで失敗を許容する場合は、new Task(3).<span style="color:gold">missable(2)</span> とします</li>
-<li><strong>task.missable(n)</strong> で失敗を許容する回数を設定できます</li>
-<li>task.missable(0) の状態で <strong>task.miss()</strong> を一度でも呼ぶと待機失敗で終了します</li>
-<li>初期状態は task.missble(0) です</li>
+<li><span style="color:gold">Task.drop()</span> は、スナップショットを生成するための内部的な情報を全て削除します</li>
+<li>この情報は、Task の待機終了で自動的に削除されます</li>
+<li>通常利用では Task.drop() を明示的に呼ぶ必要はありません</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
 </section>
-</section>
-<section id="task.extend" class="level1">
-<h1>task.extend()</h1>
-<pre class="js"><code>function callback(err) { }
-
-var task = new Task(1, callback);
-
-task.extend(1); // taskCount += 1;
-task.pass();    // ユーザタスク成功(taskCountが2なので待機する)
-task.pass();    // ユーザタスク失敗(taskCountが2なので終了する) -&gt; callback(null)</code></pre>
-<ul>
-<li>動的に taskCount を +1 するには、<strong>task.extend(1)</strong> とします</li>
-<li>次々にユーザタスクが増えるケースで使います</li>
-</ul>
-<figure>
-<img src="./assets/img/task.extend.png" />
-</figure>
-<!-- ----------------------------------------------------- -->
-
 </section>
 <section id="task.exit" class="level1">
 <h1>task.exit()</h1>
@@ -308,7 +311,7 @@ task.pass();    // ユーザタスク失敗(taskCountが2なので終了する) 
 var task = new Task(100, callback).missable(100);
 
 task.exit(); // 強制終了 -&gt; callback(new Error(...))</code></pre>
-<section id="section-7" class="level2">
+<section id="section-10" class="level2">
 <h2></h2>
 <ul>
 <li><strong>task.exit()</strong> を使うと、 taskCount や missable の状態に関わらず、待機失敗で強制終了します</li>
@@ -333,7 +336,7 @@ function userTask(task) {
 }
 
 userTask(task);</code></pre>
-<section id="section-8" class="level2">
+<section id="section-11" class="level2">
 <h2></h2>
 <ul>
 <li>例外のハンドリングはユーザタスク側で行い、<strong>task.miss()</strong> を呼んでください</li>
@@ -343,40 +346,42 @@ userTask(task);</code></pre>
 
 </section>
 </section>
-<section id="task.dump" class="level1">
-<h1>Task.dump()</h1>
-<section id="タスク一覧のダンプ" class="level2">
-<h2>タスク一覧のダンプ</h2>
-<pre class="js"><code>Task.dump();
-{
-    &quot;anonymous@165&quot;: { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: &quot;&quot; }
-    &quot;anonymous@166&quot;: { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: &quot;&quot; }
-    &quot;anonymous@167&quot;: { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: &quot;&quot; }
-}</code></pre>
-<ul>
-<li><strong>Task.dump()</strong> は Task のスナップショットを返します</li>
-<li>実行中の Task の一覧と状態を確認できます</li>
-</ul>
-</section>
-<section id="タスク名による絞込" class="level2">
-<h2>タスク名による絞込</h2>
-<pre class="js"><code>var task = new Task(1, callback, { name: &quot;TEST&quot; });
+<section id="task.extend" class="level1">
+<h1>task.extend()</h1>
+<pre class="js"><code>function callback(err) { }
 
-Task.dump(&quot;TEST&quot;);
-{
-    &quot;TEST@166&quot;: { junction: false, taskCount: 1, missableCount: 0, missedCount: 0, passedCount: 0, state: &quot;&quot; }
-}</code></pre>
+var task = new Task(1, callback);
+
+task.extend(1); // taskCount += 1;
+task.pass();    // ユーザタスク成功(taskCountが2なので待機する)
+task.pass();    // ユーザタスク失敗(taskCountが2なので終了する) -&gt; callback(null)</code></pre>
 <ul>
-<li>Task の第三引数でタスク名を指定し、<strong>Task.dump(タスク名)</strong> とすることでタスク名で絞込ができます</li>
+<li>動的に taskCount を +1 するには、<strong>task.extend(1)</strong> とします</li>
+<li>次々にユーザタスクが増えるケースで使います</li>
 </ul>
+<figure>
+<img src="./assets/img/task.extend.png" />
+</figure>
+<!-- ----------------------------------------------------- -->
+
 </section>
-<section id="section-9" class="level2">
+<section id="task.missable" class="level1">
+<h1>task.missable()</h1>
+<pre class="js"><code>function callback(err) { }
+
+var task = new Task(3, callback);
+
+task.missable(2);
+task.miss(); // ユーザタスク失敗(missableが2なので許容する)
+task.miss(); // ユーザタスク失敗(missableが2なので許容する)
+task.miss(); // ユーザタスク失敗(missableが2なので待機失敗) -&gt; callback(Error)</code></pre>
+<section id="section-12" class="level2">
 <h2></h2>
-<pre class="js"><code>Task.drop();</code></pre>
 <ul>
-<li><span style="color:gold">Task.drop()</span> は、スナップショットを生成するための内部的な情報を全て削除します</li>
-<li>この情報は、タスクの待機終了で自動的に削除されます</li>
-<li>通常利用では Task.drop() を明示的に呼ぶ必要はありません</li>
+<li>ユーザタスクが3つあり、そのうち2回まで失敗を許容する場合は、new Task(3).<span style="color:gold">missable(2)</span> とします</li>
+<li><strong>task.missable(n)</strong> で失敗を許容する回数を設定できます</li>
+<li>task.missable(0) の状態で <strong>task.miss()</strong> を一度でも呼ぶと待機失敗で終了します</li>
+<li>初期状態は task.missble(0) です</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -400,7 +405,7 @@ Task.flatten(array); // -&gt; [1, 2, 3, 4]</code></pre>
 <section id="task.arraynize" class="level2">
 <h2>Task.arraynize()</h2>
 <pre class="js"><code>var array = [1,2,3];
-array[&quot;key&quot;] = &quot;value&quot;
+array[&quot;key&quot;] = &quot;value&quot;; // Array にプロパティを追加
 
 Task.arraynize(array); // -&gt; [1, 2, 3] になる</code></pre>
 <ul>
@@ -411,7 +416,7 @@ Task.arraynize(array); // -&gt; [1, 2, 3] になる</code></pre>
 <section id="task.objectize" class="level2">
 <h2>Task.objectize()</h2>
 <pre class="js"><code>var array = [1,2,3];
-array[&quot;key&quot;] = &quot;value&quot;
+array[&quot;key&quot;] = &quot;value&quot;; // Array にプロパティを追加
 
 Task.objectize(array); // -&gt; { 0: 1, 1: 2, 2: 3, key: &quot;value&quot; }</code></pre>
 <ul>
@@ -424,7 +429,7 @@ Task.objectize(array); // -&gt; { 0: 1, 1: 2, 2: 3, key: &quot;value&quot; }</co
 </section>
 <section id="junction" class="level1">
 <h1>Junction</h1>
-<section id="section-10" class="level2">
+<section id="section-13" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) { }
 
@@ -436,11 +441,11 @@ var task2 = new Task(1, junction);</code></pre>
 <img src="./assets/img/junction.png" />
 </figure>
 <ul>
-<li>他の Task を集約する Task を <span style="color:gold">Junction(合流点)</span> と呼びます</li>
+<li>他の Task を集約する Task を <strong>Junction(合流点)</strong> と呼びます</li>
 <li>Junction を使うと Task の上下関係を記述できます</li>
 </ul>
 </section>
-<section id="section-11" class="level2">
+<section id="section-14" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) {
     console.log(&quot;finished&quot;);
@@ -460,7 +465,7 @@ lv4_task2.pass();</code></pre>
 <li>さらに上位の Junction がある場合は <strong>次々に伝播</strong> (バブルアップ)します</li>
 </ul>
 </section>
-<section id="section-12" class="level2">
+<section id="section-15" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) {
     console.log(&quot;finished&quot;);
@@ -478,7 +483,7 @@ lv4_task2.pass();</code></pre>
 <img src="./assets/img/nested.junction.png" />
 </figure>
 </section>
-<section id="section-13" class="level2">
+<section id="section-16" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) {
     console.log(&quot;finished&quot;);
@@ -516,11 +521,11 @@ var junction = new Task(2, callback); // (a &gt; b) + (c + d) が終わったら
 Task.run(&quot;a &gt; b&quot;, taskMap, junction); // a を実行後に b を実行
 Task.run(&quot;c + d&quot;, taskMap, junction); // c と d を並列実行</code></pre>
 <ul>
-<li><strong>Task.run</strong> は Task の前後関係を定義する機能です</li>
+<li><strong>Task.run</strong> は ユーザタスクの前後関係を定義する機能です</li>
 <li>Task の上下関係を定義する <strong>Junction</strong> と Task.run は組み合わせて利用できます</li>
 </ul>
 </section>
-<section id="section-14" class="level2">
+<section id="section-17" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err, buffer) {
 }
@@ -532,49 +537,49 @@ Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
     task_d: function(task) { ... }
 }, callback);</code></pre>
 <ul>
-<li><strong>Task.run</strong> を使うと、Task の直列/並列動作をシンプルな記法で定義できます</li>
-<li>タスク名を <strong><code>&gt;</code></strong> と <strong><code>+</code></strong> でつなぐ事でタスクの前後間の流れを定義していきます</li>
+<li><strong>Task.run</strong> を使うと、ユーザタスクの直列/並列動作をシンプルな記法で定義できます</li>
+<li>ユーザタスク名を <strong><code>&gt;</code></strong> と <strong><code>+</code></strong> でつなぐ事で、ユーザタスクの前後間の流れを定義していきます</li>
 </ul>
 </section>
-<section id="並列-パラレル-タスク" class="level2">
-<h2>並列( パラレル )タスク</h2>
+<section id="並列ユーザタスク" class="level2">
+<h2>並列ユーザタスク</h2>
 <pre class="js"><code>
 Task.run(&quot;task_a + task_b&quot;, {
     task_a: function(task) { task.pass(); },
     task_b: function(task) { task.pass(); },
 }, callback);</code></pre>
 <ul>
-<li>並列に実行するタスクを <strong><code>+</code></strong> でつなぐと、それらは同時に実行されます</li>
+<li>並列に実行するユーザタスク を <strong><code>+</code></strong> でつなぐと、それらは同時に実行されます</li>
 </ul>
 </section>
-<section id="直列-シリアル-タスク" class="level2">
-<h2>直列( シリアル )タスク</h2>
+<section id="直列ユーザタスク" class="level2">
+<h2>直列ユーザタスク</h2>
 <pre class="js"><code>Task.run(&quot;task_a &gt; task_b&quot;, {
     task_a: function(task) { task.pass(); },
     task_b: function(task) { task.pass(); },
 }, callback);</code></pre>
 <ul>
-<li>直列に実行するタスクを <strong><code>&gt;</code></strong> でつなぐと、それらは順番に実行されます</li>
+<li>直列に実行するユーザタスクを <strong><code>&gt;</code></strong> でつなぐと、それらは順番に実行されます</li>
 </ul>
 </section>
-<section id="遅延-ディレイ-タスク" class="level2">
-<h2>遅延( ディレイ )タスク</h2>
+<section id="遅延ユーザタスク" class="level2">
+<h2>遅延ユーザタスク</h2>
 <pre class="js"><code>Task.run(&quot;task_a &gt; 1000 &gt; task_b&quot;, {
     task_a: function(task) { task.pass(); },
     task_b: function(task) { task.pass(); },
 }, callback);</code></pre>
 <ul>
-<li>数字を埋め込むと、指定した時間分だけ待機する <strong>何もしない</strong> タスクを生成し実行します</li>
+<li>数字を埋め込むと、指定した時間分だけ待機する <strong>何もしない</strong> タスクを動的に生成し実行します</li>
 <li>上記の例では、task_a 実行後に <strong>1000ms</strong> 待機し、その後に task_b を実行します</li>
 </ul>
 </section>
-<section id="直列タスクの省略記法" class="level2">
-<h2>直列タスクの省略記法</h2>
+<section id="直列ユーザタスクの省略記法" class="level2">
+<h2>直列ユーザタスクの省略記法</h2>
 <pre class="js"><code>function task_a(task) { task.pass(); }
 function task_b(task) { task.pass(); }
 function task_c(task) { task.pass(); }
 
-// このような直列タスクは
+// このような直列ユーザタスクは
 Task.run(&quot;task_a &gt; task_b &gt; task_c&quot;, {
     task_a: task_a,
     task_b: task_b,
@@ -584,11 +589,11 @@ Task.run(&quot;task_a &gt; task_b &gt; task_c&quot;, {
 // 配列を使って短く書くことができます
 Task.run(&quot;&quot;, [task_a, task_b, task_c], callback);</code></pre>
 <ul>
-<li>タスクの配列を指定すると、順番に実行します</li>
+<li>ユーザタスクの配列を指定すると、順番に実行します</li>
 </ul>
 </section>
-<section id="直列-並列-遅延タスクを組み合わせる" class="level2">
-<h2>直列, 並列, 遅延タスクを組み合わせる</h2>
+<section id="直列並列遅延ユーザタスクを組み合わせる" class="level2">
+<h2>直列/並列/遅延ユーザタスクを組み合わせる</h2>
 <pre class="js"><code>Task.run(&quot;a &gt; b + c &gt; 1000 &gt; d&quot;, {
     a: function(task) { task.pass(); },
     b: function(task) { task.pass(); },
@@ -596,7 +601,7 @@ Task.run(&quot;&quot;, [task_a, task_b, task_c], callback);</code></pre>
     d: function(task) { task.pass(); }
 }, callback);</code></pre>
 <ul>
-<li><strong><code>a &gt; b + c + 1000 &gt; d</code></strong> は、タスク a 〜 d を以下の順番で実行します
+<li><strong><code>a &gt; b + c + 1000 &gt; d</code></strong> は、ユーザタスク a 〜 d を以下の順番で実行します
 <ol type="1">
 <li>a を実行します</li>
 <li>a の正常終了で、b と c を同時に実行します</li>
@@ -606,8 +611,8 @@ Task.run(&quot;&quot;, [task_a, task_b, task_c], callback);</code></pre>
 </ol></li>
 </ul>
 </section>
-<section id="タスクに引数を渡す" class="level2">
-<h2>タスクに引数を渡す</h2>
+<section id="ユーザタスクに引数を渡す" class="level2">
+<h2>ユーザタスクに引数を渡す</h2>
 <pre class="js"><code>var args = { a: 1, b: 2, c : 3, d: 4 };
 var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
         task_a: function(task, args) { console.log(args.a); task.pass(); },
@@ -624,22 +629,22 @@ var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
     }, { args: args });
        //////////////</code></pre>
 <ul>
-<li>Task.run から起動されるタスク(task_a 〜 task_d)に引数を渡すには、Task.run の第四引数に <span style="color:gold">options.args</span> を設定します</li>
+<li>Task.run から起動されるユーザタスク(task_a 〜 task_d)に引数を渡すには、Task.run の第四引数に <span style="color:gold">options.args</span> を設定します</li>
 </ul>
 </section>
-<section id="直列タスクの途中で失敗すると" class="level2">
-<h2>直列タスクの途中で失敗すると</h2>
+<section id="直列ユーザタスクの途中で失敗すると" class="level2">
+<h2>直列ユーザタスクの途中で失敗すると</h2>
 <pre class="js"><code>Task.run(&quot;task_a &gt; task_b&quot;, {
     task_a: function(task) { task.miss(); },
     task_b: function(task) { task.pass(); }, // task_b は実行されません
 }, callback);</code></pre>
 <ul>
-<li>直列タスクの途中で失敗すると後続のタスクは実行されません</li>
+<li>直列ユーザタスクの途中で失敗すると後続のユーザタスクは実行されません</li>
 <li>task_a が失敗した場合は、後続の task_b は実行しません</li>
 </ul>
 </section>
-<section id="並列タスクの一部が失敗すると" class="level2">
-<h2>並列タスクの一部が失敗すると</h2>
+<section id="並列ユーザタスクの一部が失敗すると" class="level2">
+<h2>並列ユーザタスクの一部が失敗すると</h2>
 <pre class="js"><code>Task.run(&quot;task_c + task_d + task_e&quot;, {
     task_c: function(task) {
         setTimeout(function() { task.miss() }, 1000); // 1000ms 後に失敗
@@ -648,7 +653,7 @@ var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
     task_e: function(task) { task.pass(); }, // task_c が中断しても task_e は中断しません
 }, callback);</code></pre>
 <ul>
-<li>並列タスクの一部が失敗しても、同じグループに属する並列実行タスクは中断しません</li>
+<li>並列ユーザタスクの一部が失敗しても、同じグループに属する並列実行ユーザタスクは中断しません</li>
 <li>task_c が途中で失敗した場合でも、task_d と task_e は中断しません</li>
 </ul>
 <!-- ----------------------------------------------------- -->
@@ -657,12 +662,15 @@ var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
 </section>
 <section id="javascript-vs-promise-vs-task.js" class="level1">
 <h1>JavaScript vs Promise vs Task.js</h1>
-<section id="section-15" class="level2">
+<section id="section-18" class="level2">
 <h2></h2>
+<p>「非同期のユーザタスク A, B, C, D を、<br />A,B のグループと C,D のグループに分け、<br />2つのグループの完了を待つ」処理を、<br />それぞれの方法で実装してみます</p>
 <ul>
-<li>非同期タスク A, B, C, D を (A, B) のグループと、(C, D) のグループに分けます</li>
-<li>2つのグループの完了を待ち合わせます</li>
-<li>これらを JavaScript, jQuery.Deferred, Promise, Task.js で実装する例です</li>
+<li>JavaScript</li>
+<li>jQuery.Deferred</li>
+<li>DOM Promise</li>
+<li>Junction</li>
+<li>Junction + Task.run</li>
 </ul>
 </section>
 <section id="javascript-version" class="level2">
@@ -789,23 +797,78 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</co
 }
 
 waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</code></pre>
+<!-- ----------------------------------------------------- -->
+</section>
+</section>
+<section id="install-and-import-script" class="level1">
+<h1>install and import script</h1>
+<section id="github" class="level2">
+<h2>github</h2>
+<pre class="sh"><code>https://github.com/uupaa/Task.js</code></pre>
+</section>
+<section id="npm-install" class="level2">
+<h2>npm install</h2>
+<pre class="sh"><code>$ npm install uupaa.task.js</code></pre>
+<ul>
+<li>モジュール名が <strong>uupaa.</strong> で始まっている理由について
+<ul>
+<li>npm モジュール名は先願制で、一般名詞や動詞は既に枯渇しています</li>
+<li>npm モジュール名には、大文字を利用できません</li>
+<li>このような理由により、致し方なく…</li>
+<li>uupaa がお供するとお考え下さい</li>
+</ul></li>
+</ul>
+<p>(ε・◇・)з o O ( お伴するよ〜</p>
+</section>
+<section id="in-node.js" class="level2">
+<h2>in Node.js</h2>
+<pre class="js"><code>var Task = require(&quot;uupaa.task.js&quot;);
+
+var task = new Task(1, function(err) {
+        console.log(err ? err.message : &quot;ok&quot;);
+    });
+
+task.pass();</code></pre>
+</section>
+<section id="in-browser" class="level2">
+<h2>in Browser</h2>
+<pre class="js"><code>&lt;script src=&quot;uupaa.task.js&quot;&gt;&lt;/script&gt;
+
+&lt;script&gt;
+var task = new Task(1, function(err) {
+        console.log(err ? err.message : &quot;ok&quot;);
+    });
+
+task.pass();
+&lt;/script&gt;</code></pre>
+</section>
+<section id="in-webworkers" class="level2">
+<h2>in WebWorkers</h2>
+<pre class="js"><code>importScripts(&quot;uupaa.task.js&quot;);
+
+var task = new Task(1, function(err) {
+        console.log(err ? err.message : &quot;ok&quot;);
+    });
+
+task.pass();</code></pre>
+<!-- ----------------------------------------------------- -->
+
 </section>
 </section>
 <section id="まとめ-1" class="level1">
 <h1>まとめ</h1>
-<section id="section-16" class="level2">
+<section id="section-19" class="level2">
 <h2></h2>
 <p>Task.js は以下の特徴を備えています</p>
 <ul>
-<li>シンプルかつ柔軟です</li>
-<li>様々な環境で利用できます</li>
-<li>既存の構造を大きく改変しなくても導入できます</li>
-<li>非同期処理の都合でコードを汚さずに済みます</li>
-<li>Junction で上下関係を定義し、Task.run で前後関係を定義できます</li>
-<li>Junction と Task.run を組み合わせると全方位にスッキリとしたコードが書けます</li>
+<li><strong>様々な環境で動作</strong> します</li>
+<li>構造が <strong>シンプル</strong> で応用が効きます</li>
+<li>既存の構造やユーザタスクを <strong>大きく改変しなくても導入可能</strong> です</li>
+<li>Junction で <strong>上下関係を定義</strong> し、Task.run で <strong>前後関係を定義</strong> できます</li>
+<li>Junction と Task.run を組み合わせて <strong>スッキリ</strong> としたコードが書けます</li>
 </ul>
 </section>
-<section id="section-17" class="level2">
+<section id="section-20" class="level2">
 <h2></h2>
 <p>(ε・◇・)з o O ( Task.js マジ オススメ</p>
 </section>
