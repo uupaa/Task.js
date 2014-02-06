@@ -179,7 +179,9 @@ setTimeout(userTask1, 1000); // 非同期タスク: 1000ms待ってから userTa
 
 <!-- ----------------------------------------------------- -->
 
-# task.buffer()
+# buffer
+
+## task.buffer()
 
 ```js
 function callback(err, buffer) {
@@ -194,12 +196,30 @@ task.set("key2", "value2");
 task.pass();
 ```
 
-- バッファ(buffer)を使うと、ユーザタスクの実行結果を受け渡す事ができます
-- buffer の実体は配列です
+- バッファ(buffer)と呼ばれる配列に値を設定し callback に受け渡す事ができます
 - **task.push(value)** は buffer.push(value) を行います
 - **task.set(key,value)** は buffer[key] = value を行います
-- buffer は callback(, **buffer**) か、**task.buffer()** でアクセスできます
+- **task.buffer()** からもアクセスできます
 
+## Shared Buffer
+
+```js
+function callback(err, buffer) { // sharedBuffer: ["junction", "value1", "value2"]
+    console.log(buffer.length); // -> 3
+}
+
+var junction = new Task(2, callback).push("junction");
+var task1    = new Task(1, junction);
+var task2    = new Task(1, junction);
+
+task1.push("value1").pass();
+task2.push("value2").pass();
+```
+
+- 後述する Junction を使い、階層構造をもった Task は、  
+  お互いの **buffer を共有した状態** になります
+- task1.push("value1") は junction.push("value1") と **同じ結果** になり  
+  task2.push("value2") も junction.push("value2") と同じ結果になります
 
 <!-- ----------------------------------------------------- -->
 
@@ -445,31 +465,6 @@ task2.pass(); // task2 の待機終了 → 状態変化が junction にも通知
 
 <!-- ----------------------------------------------------- -->
 
-# Shared Buffer
-
-## 
-
-```js
-function callback(err, buffer) { // sharedBuffer: ["junction", "value1", "value2"]
-    console.log(buffer.length); // -> 3
-}
-
-var junction = new Task(2, callback).push("junction");
-var task1    = new Task(1, junction);
-var task2    = new Task(1, junction);
-
-task1.push("value1").pass();
-task2.push("value2").pass();
-```
-
-- Junction を使い、階層構造をもった Task は、  
-  お互いの **buffer を共有した状態** になります
-- task1.push("value1") は junction.push("value1") と **同じ結果** になり  
-  task2.push("value2") も junction.push("value2") と同じ結果になります
-
-
-<!-- ----------------------------------------------------- -->
-
 # Task.run
 
 
@@ -581,8 +576,9 @@ Task.run("a > b + c > 1000 > d", {
 - **`a > b + c + 1000 > d`** は、タスク a 〜 d を以下の順番で実行します
     1. a を実行します
     2. a の正常終了で、b と c を同時に実行します
-    3. b と c が正常終了し、a の終了から 1000ms 以上経過していたら d を実行します
-    4. d が正常終了すると、callback を呼び出します
+    3. b と c が正常終了すると 1000ms 待機します
+    4. 1000ms 待機後に d を実行します
+    5. d が正常終了すると、callback を呼び出します
 
 
 

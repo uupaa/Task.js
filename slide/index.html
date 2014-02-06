@@ -223,8 +223,10 @@ setTimeout(userTask1, 1000); // 非同期タスク: 1000ms待ってから userTa
 
 </section>
 </section>
-<section id="task.buffer" class="level1">
-<h1>task.buffer()</h1>
+<section id="buffer" class="level1">
+<h1>buffer</h1>
+<section id="task.buffer" class="level2">
+<h2>task.buffer()</h2>
 <pre class="js"><code>function callback(err, buffer) {
     console.log(buffer[0]);   // -&gt; &quot;value1&quot;
     console.log(buffer.key2); // -&gt; &quot;value2&quot;
@@ -236,14 +238,31 @@ task.push(&quot;value1&quot;);
 task.set(&quot;key2&quot;, &quot;value2&quot;);
 task.pass();</code></pre>
 <ul>
-<li>バッファ(buffer)を使うと、ユーザタスクの実行結果を受け渡す事ができます</li>
-<li>buffer の実体は配列です</li>
+<li>バッファ(buffer)と呼ばれる配列に値を設定し callback に受け渡す事ができます</li>
 <li><strong>task.push(value)</strong> は buffer.push(value) を行います</li>
 <li><strong>task.set(key,value)</strong> は buffer[key] = value を行います</li>
-<li>buffer は callback(, <strong>buffer</strong>) か、<strong>task.buffer()</strong> でアクセスできます</li>
+<li><strong>task.buffer()</strong> からもアクセスできます</li>
+</ul>
+</section>
+<section id="shared-buffer" class="level2">
+<h2>Shared Buffer</h2>
+<pre class="js"><code>function callback(err, buffer) { // sharedBuffer: [&quot;junction&quot;, &quot;value1&quot;, &quot;value2&quot;]
+    console.log(buffer.length); // -&gt; 3
+}
+
+var junction = new Task(2, callback).push(&quot;junction&quot;);
+var task1    = new Task(1, junction);
+var task2    = new Task(1, junction);
+
+task1.push(&quot;value1&quot;).pass();
+task2.push(&quot;value2&quot;).pass();</code></pre>
+<ul>
+<li>後述する Junction を使い、階層構造をもった Task は、<br /> お互いの <strong>buffer を共有した状態</strong> になります</li>
+<li>task1.push(&quot;value1&quot;) は junction.push(&quot;value1&quot;) と <strong>同じ結果</strong> になり<br /> task2.push(&quot;value2&quot;) も junction.push(&quot;value2&quot;) と同じ結果になります</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
+</section>
 </section>
 <section id="task.missable" class="level1">
 <h1>task.missable()</h1>
@@ -474,28 +493,6 @@ task2.pass(); // task2 の待機終了 → 状態変化が junction にも通知
 
 </section>
 </section>
-<section id="shared-buffer" class="level1">
-<h1>Shared Buffer</h1>
-<section id="section-14" class="level2">
-<h2></h2>
-<pre class="js"><code>function callback(err, buffer) { // sharedBuffer: [&quot;junction&quot;, &quot;value1&quot;, &quot;value2&quot;]
-    console.log(buffer.length); // -&gt; 3
-}
-
-var junction = new Task(2, callback).push(&quot;junction&quot;);
-var task1    = new Task(1, junction);
-var task2    = new Task(1, junction);
-
-task1.push(&quot;value1&quot;).pass();
-task2.push(&quot;value2&quot;).pass();</code></pre>
-<ul>
-<li>Junction を使い、階層構造をもった Task は、<br /> お互いの <strong>buffer を共有した状態</strong> になります</li>
-<li>task1.push(&quot;value1&quot;) は junction.push(&quot;value1&quot;) と <strong>同じ結果</strong> になり<br /> task2.push(&quot;value2&quot;) も junction.push(&quot;value2&quot;) と同じ結果になります</li>
-</ul>
-<!-- ----------------------------------------------------- -->
-
-</section>
-</section>
 <section id="task.run" class="level1">
 <h1>Task.run</h1>
 <section id="task.run-と-junction" class="level2">
@@ -515,7 +512,7 @@ Task.run(&quot;c + d&quot;, taskMap, junction); // c と d を並列実行</code
 <li><strong>Junction</strong> (上下関係の定義) と <strong>Task.run</strong> (前後関係の定義) を組み合わせると、色々な事が簡単になります</li>
 </ul>
 </section>
-<section id="section-15" class="level2">
+<section id="section-14" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err, buffer) {
 }
@@ -595,7 +592,8 @@ Task.run(&quot;&quot;, [task_a, task_b, task_c], callback);</code></pre>
 <ol type="1">
 <li>a を実行します</li>
 <li>a の正常終了で、b と c を同時に実行します</li>
-<li>b と c が正常終了し、a の終了から 1000ms 以上経過していたら d を実行します</li>
+<li>b と c が正常終了すると 1000ms 待機します</li>
+<li>1000ms 待機後に d を実行します</li>
 <li>d が正常終了すると、callback を呼び出します</li>
 </ol></li>
 </ul>
@@ -651,7 +649,7 @@ var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
 </section>
 <section id="javascript-vs-promise-vs-task.js" class="level1">
 <h1>JavaScript vs Promise vs Task.js</h1>
-<section id="section-16" class="level2">
+<section id="section-15" class="level2">
 <h2></h2>
 <ul>
 <li>非同期タスク A, B, C, D を (A, B) のグループと、(C, D) のグループに分けます</li>
@@ -787,7 +785,7 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</co
 </section>
 <section id="まとめ-1" class="level1">
 <h1>まとめ</h1>
-<section id="section-17" class="level2">
+<section id="section-16" class="level2">
 <h2></h2>
 <p>Task.js は以下の特徴を備えています</p>
 <ul>
@@ -797,7 +795,7 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</co
 <li>非同期処理の都合でコードを汚さずに済む</li>
 </ul>
 </section>
-<section id="section-18" class="level2">
+<section id="section-17" class="level2">
 <h2></h2>
 <p>(ε・◇・)з o O ( Task.js オススメ</p>
 </section>
