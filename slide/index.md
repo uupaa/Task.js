@@ -161,7 +161,8 @@ task.set("key2", "value2");
 task.pass();
 ```
 
-- バッファ(buffer)と呼ばれる配列に値を設定し callback に受け渡す事ができます
+- buffer はデータの入れ物(配列)です
+- buffer に値を設定し callback で値を受け取る事ができます
 - **task.push(value)** は buffer.push(value) を行います
 - **task.set(key,value)** は buffer[key] = value を行います
 - **task.buffer()** からもアクセスできます
@@ -786,6 +787,7 @@ https://github.com/uupaa/Task.js
 $ npm install uupaa.task.js
 ```
 
+<!--
 - モジュール名が **uupaa.** で始まっている理由について
     - npm モジュール名は先願制で、一般名詞や動詞は既に枯渇しています
     - npm モジュール名には、大文字を利用できません
@@ -793,6 +795,7 @@ $ npm install uupaa.task.js
     - uupaa がお供するとお考え下さい
 
 (ε・◇・)з o O ( お伴するよ〜
+ -->
 
 ## in Node.js
 ```js

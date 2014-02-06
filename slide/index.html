@@ -235,7 +235,8 @@ task.push(&quot;value1&quot;);
 task.set(&quot;key2&quot;, &quot;value2&quot;);
 task.pass();</code></pre>
 <ul>
-<li>バッファ(buffer)と呼ばれる配列に値を設定し callback に受け渡す事ができます</li>
+<li>buffer はデータの入れ物(配列)です</li>
+<li>buffer に値を設定し callback で値を受け取る事ができます</li>
 <li><strong>task.push(value)</strong> は buffer.push(value) を行います</li>
 <li><strong>task.set(key,value)</strong> は buffer[key] = value を行います</li>
 <li><strong>task.buffer()</strong> からもアクセスできます</li>
@@ -809,16 +810,16 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</co
 <section id="npm-install" class="level2">
 <h2>npm install</h2>
 <pre class="sh"><code>$ npm install uupaa.task.js</code></pre>
-<ul>
-<li>モジュール名が <strong>uupaa.</strong> で始まっている理由について
-<ul>
-<li>npm モジュール名は先願制で、一般名詞や動詞は既に枯渇しています</li>
-<li>npm モジュール名には、大文字を利用できません</li>
-<li>このような理由により、致し方なく…</li>
-<li>uupaa がお供するとお考え下さい</li>
-</ul></li>
-</ul>
-<p>(ε・◇・)з o O ( お伴するよ〜</p>
+<!--
+- モジュール名が **uupaa.** で始まっている理由について
+    - npm モジュール名は先願制で、一般名詞や動詞は既に枯渇しています
+    - npm モジュール名には、大文字を利用できません
+    - このような理由により、致し方なく…
+    - uupaa がお供するとお考え下さい
+
+(ε・◇・)з o O ( お伴するよ〜
+ -->
+
 </section>
 <section id="in-node.js" class="level2">
 <h2>in Node.js</h2>
