@@ -13,7 +13,7 @@ new Test().add([
         testJunctionWithSelfSharedBuffer,
         testJunctionWithSharedBuffer,
         testJunctionWithSharedBuffer2,
-        testCallback3rdArgIsTaskInstance,
+//      testCallback3rdArgIsTaskInstance,
         testDump,
         testDumpAll,
         testDumpMissMatch,
@@ -293,12 +293,10 @@ function testJunctionWithSharedBuffer(next) {
 }
 
 function testJunctionWithSharedBuffer2(next) {
-    function callback(err,    // null
-                      buffer, // [ "SHARE PAYLOAD", 1.1, 2.2, 3.3, 4.4 ] + { a: 1, b: 2, c: 3, d: 4 }
-                      task) { // junction
+    function callback(err,      // null
+                      buffer) { // [ "SHARE PAYLOAD", 1.1, 2.2, 3.3, 4.4 ] + { a: 1, b: 2, c: 3, d: 4 }
 
-        if (buffer.join() === "SHARE PAYLOAD,1.1,2.2,3.3,4.4" &&
-            task === junction) {
+        if (buffer.join() === "SHARE PAYLOAD,1.1,2.2,3.3,4.4") {
             console.log("testJunctionWithSharedBuffer2 ok");
             next && next.pass();
         } else {
@@ -324,6 +322,7 @@ function testJunctionWithSharedBuffer2(next) {
     task2.push(4.4).set("d", 4).pass();
 }
 
+/*
 function testCallback3rdArgIsTaskInstance(next) {
     function callback(err, buffer, task) {
 
@@ -342,6 +341,7 @@ function testCallback3rdArgIsTaskInstance(next) {
     task1.pass();
     task2.pass();
 }
+ */
 
 function testDump(next) {
     function callback(err, buffer) {
