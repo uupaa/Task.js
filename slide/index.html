@@ -66,10 +66,6 @@
 <li>addEventListener</li>
 <li>DOMContentLoaded</li>
 </ul>
-<p>簡単にコールバック地獄になるらしい</p>
-<hr />
-
-<p>(地獄というほどのモノでもない気がするけど…)</p>
 </section>
 <section id="section" class="level2">
 <h2></h2>
@@ -296,11 +292,11 @@ task.extend(1); // taskCount += 1;
 task.pass();    // ユーザタスク成功(taskCountが2なので待機する)
 task.pass();    // ユーザタスク失敗(taskCountが2なので終了する) -&gt; callback(null)</code></pre>
 <ul>
-<li>動的に taskCount を +1 するには、<span style="color:gold">task.extend(1)</span> とします</li>
-<li>次々にユーザタスクが増えるケースなどで利用します</li>
+<li>動的に taskCount を +1 するには、<strong>task.extend(1)</strong> とします</li>
+<li>次々にユーザタスクが増えるケースで使います</li>
 </ul>
 <figure>
-<img src="http://gyazo.com/b035eb1490bf7c56cb37a6db9f539e33.png" />
+<img src="./assets/img/task.extend.png" />
 </figure>
 <!-- ----------------------------------------------------- -->
 
@@ -437,10 +433,11 @@ var junction = new Task(2, callback);
 var task1 = new Task(1, junction);
 var task2 = new Task(1, junction);</code></pre>
 <figure>
-<img src="http://gyazo.com/85fe1e3e873190deee7362c09c001d5a.png" />
+<img src="./assets/img/junction.png" />
 </figure>
 <ul>
-<li>他のタスクを集約する Task を <span style="color:gold">Junction(合流点)</span> と呼びます</li>
+<li>他の Task を集約する Task を <span style="color:gold">Junction(合流点)</span> と呼びます</li>
+<li>Junction を使うと Task の上下関係を記述できます</li>
 </ul>
 </section>
 <section id="section-11" class="level2">
@@ -469,6 +466,24 @@ lv4_task2.pass();</code></pre>
     console.log(&quot;finished&quot;);
 }
 
+lv1_junction     = new Task(1, callback);
+  lv2_junction   = new Task(1, lv1_junction);
+    lv3_junction = new Task(1, lv2_junction);
+      lv4_task1  = new Task(1, lv3_junction);
+      lv4_task2  = new Task(1, lv3_junction);
+
+lv4_task1.pass();
+lv4_task2.pass();</code></pre>
+<figure>
+<img src="./assets/img/nested.junction.png" />
+</figure>
+</section>
+<section id="section-13" class="level2">
+<h2></h2>
+<pre class="js"><code>function callback(err) {
+    console.log(&quot;finished&quot;);
+}
+
 var junction = new Task(2, callback);
 
 var task1 = new Task(1, junction);
@@ -480,14 +495,6 @@ task2.pass(); // task2 の待機終了 → 状態変化が junction にも通知
 <li>task1.pass() で task1 と junction の状態が変化します</li>
 <li>task2.pass() で task2 と junction の状態が変化します</li>
 <li>task2.pass() のタイミングで junction の待機も終了し、callback が呼ばれます</li>
-</ul>
-</section>
-<section id="section-13" class="level2">
-<h2></h2>
-<ul>
-<li>このように Junction を使うと、複雑な待ち合わせ構造を簡単に記述できます。</li>
-<li>Junction はタスクの上下関係を記述する機能です</li>
-<li>後述する Task.run はタスクの前後関係を記述する機能です</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -509,7 +516,8 @@ var junction = new Task(2, callback); // (a &gt; b) + (c + d) が終わったら
 Task.run(&quot;a &gt; b&quot;, taskMap, junction); // a を実行後に b を実行
 Task.run(&quot;c + d&quot;, taskMap, junction); // c と d を並列実行</code></pre>
 <ul>
-<li><strong>Junction</strong> (上下関係の定義) と <strong>Task.run</strong> (前後関係の定義) を組み合わせると、色々な事が簡単になります</li>
+<li><strong>Task.run</strong> は Task の前後関係を定義する機能です</li>
+<li>Task の上下関係を定義する <strong>Junction</strong> と Task.run は組み合わせて利用できます</li>
 </ul>
 </section>
 <section id="section-14" class="level2">
@@ -789,15 +797,17 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</co
 <h2></h2>
 <p>Task.js は以下の特徴を備えています</p>
 <ul>
-<li>シンプルかつ柔軟</li>
-<li>様々な環境で利用できる</li>
-<li>既存の構造を大きく改変しなくても導入できる</li>
-<li>非同期処理の都合でコードを汚さずに済む</li>
+<li>シンプルかつ柔軟です</li>
+<li>様々な環境で利用できます</li>
+<li>既存の構造を大きく改変しなくても導入できます</li>
+<li>非同期処理の都合でコードを汚さずに済みます</li>
+<li>Junction で上下関係を定義し、Task.run で前後関係を定義できます</li>
+<li>Junction と Task.run を組み合わせると全方位にスッキリとしたコードが書けます</li>
 </ul>
 </section>
 <section id="section-17" class="level2">
 <h2></h2>
-<p>(ε・◇・)з o O ( Task.js オススメ</p>
+<p>(ε・◇・)з o O ( Task.js マジ オススメ</p>
 </section>
 </section>
 </div>
