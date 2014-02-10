@@ -1,4 +1,4 @@
-new Test().add([
+var test = new Test().add([
         // --- Task ---
         testPassWithoutArgument,
         testMissWithoutArgument,
@@ -30,13 +30,20 @@ new Test().add([
         testArrayTask,
         testArrayWithRoute,
         testMapWithoutRoute,
-        testArgs,
+        testArg,
         testThrowTask,
         // benchmark
-        test1000PromiseBench,
         test1000TaskBench,
-    ]).run()
-      .worker(function(err, test) {
+    ]);
+
+    if (this["Promise"]) {
+        test.add([
+                // benchmark
+                test1000PromiseBench,
+            ]);
+    }
+
+    test.run().worker(function(err, test) {
         if (!err) {
             var undo = Test.swap(Task, Task_);
 
@@ -645,27 +652,27 @@ function testMapWithoutRoute(next) {
 }
 
 
-function testArgs(next) {
+function testArg(next) {
 
-    var args = { a: 1, b: 2, c: 3 };
+    var arg = { a: 1, b: 2, c: 3 };
     var route = "";
     var last = 0;
 
     Task.run("task_a > task_c > task_b", {
-        task_a: function(task, args) { route += args.a; task.pass(); },
-        task_b: function(task, args) { route += args.b; route === "132" ? task.pass()
+        task_a: function(task, arg) { route += arg.a; task.pass(); },
+        task_b: function(task, arg) { route += arg.b; route === "132" ? task.pass()
                                                                         : task.miss(); },
-        task_c: function(task, args) { route += args.c; route === "13" ? task.pass()
+        task_c: function(task, arg) { route += arg.c; route === "13" ? task.pass()
                                                                        : task.miss(); },
     }, function(err, buffer, task) {
         if (err) {
-            console.log("testArgs ng");
+            console.log("testArg ng");
             next && next.miss();
         } else {
-            console.log("testArgs ok");
+            console.log("testArg ok");
             next && next.pass();
         }
-    }, { args: args });
+    }, { arg: arg });
 }
 
 function testThrowTask(next) {
