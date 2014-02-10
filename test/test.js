@@ -32,6 +32,9 @@ new Test().add([
         testMapWithoutRoute,
         testArgs,
         testThrowTask,
+        // benchmark
+        test1000PromiseBench,
+        test1000TaskBench,
     ]).run()
       .worker(function(err, test) {
         if (!err) {
@@ -686,6 +689,54 @@ function testThrowTask(next) {
             task.pass();
         },
     }, callback);
+}
+
+
+function test1000TaskBench(next) {
+
+    function callback(err, buffer) {
+        if (err) {
+            console.error("test1000TaskBench ng");
+            next && next.miss();
+        } else {
+            console.log("test1000TaskBench ok: " + (Date.now() - time));
+            next && next.pass();
+        }
+    }
+
+    // create task
+    var tasks = 1000;
+    var taskMap = [];
+    for (var i = 0; i < tasks; ++i) {
+        taskMap["task" + i] = function(task) { task.pass(); };
+    }
+
+    var time = Date.now();
+
+    Task.run("", taskMap, callback);
+}
+
+function test1000PromiseBench(next) {
+
+    function callback() {
+        console.log("test1000PromiseBench ok: " + (Date.now() - time));
+        next && next.pass();
+    }
+
+    // create task
+    var tasks = 1000;
+    var taskMap = [];
+    for (var i = 0; i < tasks; ++i) {
+        taskMap[i] = function() {
+            new Promise(function(resolve, reject) {
+                resolve();
+            });
+        };
+    }
+
+    var time = Date.now();
+
+    Promise.all(taskMap).then(callback);
 }
 
 
