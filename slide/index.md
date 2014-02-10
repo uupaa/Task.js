@@ -133,6 +133,7 @@ Task.js の基本はこれだけです。
 
 | 用法             | API             |
 |------------------|-----------------|
+| done             | task.done(err)  |
 | バッファ         | callback(buffer), task.buffer() |
 | デバッグ         | Task.dump(), Task.drop() |
 | 強制終了         | task.exit(), task.message() |
@@ -141,6 +142,45 @@ Task.js の基本はこれだけです。
 | Arrayを変換      | Task.flatten(), Task.arraynize(), Task.objectize() |
 | Taskを連結       | Junction, Task.run() |
 
+<!-- ----------------------------------------------------- -->
+
+# task.done()
+
+## 
+
+```js
+function callback(err, buffer) {
+    alert(err.message); // エラーメッセージ
+}
+
+var task = new Task(1, callback);
+
+task.done(new Error("エラーメッセージ"));
+```
+
+- **task.done** に Error オブジェクトを渡すと **task.message(err.message).miss()** として動作します
+- task.done の引数を指定しないか falsy な値(null, 0, undefined, "") を渡すと **task.pass()** として動作します
+
+
+## 
+
+- task.done を使うと Error オブジェクトの有無で **task.pass()** または **task.miss()** を呼び分けている処理をスッキリと記述できます
+
+```js
+// このようなありがちなコードが
+
+if (err) { // Error Object
+    task.message(err.message).miss();
+} else {
+    task.pass();
+}
+```
+
+```js
+// 一行で書けます
+
+task.done(err);
+```
 
 <!-- ----------------------------------------------------- -->
 
@@ -567,24 +607,24 @@ Task.run("a > b + c > 1000 > d", {
 ## ユーザタスクに引数を渡す
 
 ```js
-var args = { a: 1, b: 2, c : 3, d: 4 };
+var arg = { a: 1, b: 2, c : 3, d: 4 };
 var junction = Task.run("task_a > task_b + task_c > task_d", {
-        task_a: function(task, args) { console.log(args.a); task.pass(); },
+        task_a: function(task, arg) { console.log(arg.a); task.pass(); },
                                ////                //////
-        task_b: function(task, args) { console.log(args.b); task.pass(); },
-        task_c: function(task, args) { console.log(args.c); task.pass(); },
-        task_d: function(task, args) { console.log(args.d); task.pass(); },
+        task_b: function(task, arg) { console.log(arg.b); task.pass(); },
+        task_c: function(task, arg) { console.log(arg.c); task.pass(); },
+        task_d: function(task, arg) { console.log(arg.d); task.pass(); },
     }, function(err, buffer) {
         if (err) {
             console.log("ng");
         } else {
             console.log("ok");
         }
-    }, { args: args });
+    }, { arg: arg });
        //////////////
 ```
 
-- Task.run から起動されるユーザタスク(task_a 〜 task_d)に引数を渡すには、Task.run の第四引数に <span style="color:gold">options.args</span> を設定します
+- Task.run から起動されるユーザタスク(task_a 〜 task_d)に引数を渡すには、Task.run の第四引数に <span style="color:gold">options.arg</span> を設定します
 
 
 ## 直列ユーザタスクの途中で失敗すると

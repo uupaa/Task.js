@@ -187,35 +187,74 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 </thead>
 <tbody>
 <tr class="odd">
+<td style="text-align: left;">done</td>
+<td style="text-align: left;">task.done(err)</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">バッファ</td>
 <td style="text-align: left;">callback(buffer), task.buffer()</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">デバッグ</td>
 <td style="text-align: left;">Task.dump(), Task.drop()</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">強制終了</td>
 <td style="text-align: left;">task.exit(), task.message()</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">待機数を拡張</td>
 <td style="text-align: left;">task.extend()</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">失敗を許容</td>
 <td style="text-align: left;">task.missable()</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">Arrayを変換</td>
 <td style="text-align: left;">Task.flatten(), Task.arraynize(), Task.objectize()</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">Taskを連結</td>
 <td style="text-align: left;">Junction, Task.run()</td>
 </tr>
 </tbody>
 </table>
+<!-- ----------------------------------------------------- -->
+
+</section>
+</section>
+<section id="task.done" class="level1">
+<h1>task.done()</h1>
+<section id="section-9" class="level2">
+<h2></h2>
+<pre class="js"><code>function callback(err, buffer) {
+    alert(err.message); // エラーメッセージ
+}
+
+var task = new Task(1, callback);
+
+task.done(new Error(&quot;エラーメッセージ&quot;));</code></pre>
+<ul>
+<li><strong>task.done</strong> に Error オブジェクトを渡すと <strong>task.message(err.message).miss()</strong> として動作します</li>
+<li>task.done の引数を指定しないか falsy な値(null, 0, undefined, &quot;&quot;) を渡すと <strong>task.pass()</strong> として動作します</li>
+</ul>
+</section>
+<section id="section-10" class="level2">
+<h2></h2>
+<ul>
+<li>task.done を使うと Error オブジェクトの有無で <strong>task.pass()</strong> または <strong>task.miss()</strong> を呼び分けている処理をスッキリと記述できます</li>
+</ul>
+<pre class="js"><code>// このようなありがちなコードが
+
+if (err) { // Error Object
+    task.message(err.message).miss();
+} else {
+    task.pass();
+}</code></pre>
+<pre class="js"><code>// 一行で書けます
+
+task.done(err);</code></pre>
 <!-- ----------------------------------------------------- -->
 
 </section>
@@ -293,7 +332,7 @@ Task.dump(&quot;TEST&quot;);
 <li>Task の第三引数で Task 名を指定し、<strong>Task.dump(taskName)</strong> で絞り込めます</li>
 </ul>
 </section>
-<section id="section-9" class="level2">
+<section id="section-11" class="level2">
 <h2></h2>
 <pre class="js"><code>Task.drop();</code></pre>
 <ul>
@@ -312,7 +351,7 @@ Task.dump(&quot;TEST&quot;);
 var task = new Task(100, callback).missable(100);
 
 task.exit(); // 強制終了 -&gt; callback(new Error(...))</code></pre>
-<section id="section-10" class="level2">
+<section id="section-12" class="level2">
 <h2></h2>
 <ul>
 <li><strong>task.exit()</strong> を使うと、 taskCount や missable の状態に関わらず、待機失敗で強制終了します</li>
@@ -337,7 +376,7 @@ function userTask(task) {
 }
 
 userTask(task);</code></pre>
-<section id="section-11" class="level2">
+<section id="section-13" class="level2">
 <h2></h2>
 <ul>
 <li>例外のハンドリングはユーザタスク側で行い、<strong>task.miss()</strong> を呼んでください</li>
@@ -376,7 +415,7 @@ task.missable(2);
 task.miss(); // ユーザタスク失敗(missableが2なので許容する)
 task.miss(); // ユーザタスク失敗(missableが2なので許容する)
 task.miss(); // ユーザタスク失敗(missableが2なので待機失敗) -&gt; callback(Error)</code></pre>
-<section id="section-12" class="level2">
+<section id="section-14" class="level2">
 <h2></h2>
 <ul>
 <li>ユーザタスクが3つあり、そのうち2回まで失敗を許容する場合は、new Task(3).<span style="color:gold">missable(2)</span> とします</li>
@@ -430,7 +469,7 @@ Task.objectize(array); // -&gt; { 0: 1, 1: 2, 2: 3, key: &quot;value&quot; }</co
 </section>
 <section id="junction" class="level1">
 <h1>Junction</h1>
-<section id="section-13" class="level2">
+<section id="section-15" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) { }
 
@@ -446,7 +485,7 @@ var task2 = new Task(1, junction);</code></pre>
 <li>Junction を使うと Task の上下関係を記述できます</li>
 </ul>
 </section>
-<section id="section-14" class="level2">
+<section id="section-16" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) {
     console.log(&quot;finished&quot;);
@@ -466,7 +505,7 @@ lv4_task2.pass();</code></pre>
 <li>さらに上位の Junction がある場合は <strong>次々に伝播</strong> (バブルアップ)します</li>
 </ul>
 </section>
-<section id="section-15" class="level2">
+<section id="section-17" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) {
     console.log(&quot;finished&quot;);
@@ -484,7 +523,7 @@ lv4_task2.pass();</code></pre>
 <img src="./assets/img/nested.junction.png" />
 </figure>
 </section>
-<section id="section-16" class="level2">
+<section id="section-18" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) {
     console.log(&quot;finished&quot;);
@@ -526,7 +565,7 @@ Task.run(&quot;c + d&quot;, taskMap, junction); // c と d を並列実行</code
 <li>Task の上下関係を定義する <strong>Junction</strong> と Task.run は組み合わせて利用できます</li>
 </ul>
 </section>
-<section id="section-17" class="level2">
+<section id="section-19" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err, buffer) {
 }
@@ -614,23 +653,23 @@ Task.run(&quot;&quot;, [task_a, task_b, task_c], callback);</code></pre>
 </section>
 <section id="ユーザタスクに引数を渡す" class="level2">
 <h2>ユーザタスクに引数を渡す</h2>
-<pre class="js"><code>var args = { a: 1, b: 2, c : 3, d: 4 };
+<pre class="js"><code>var arg = { a: 1, b: 2, c : 3, d: 4 };
 var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
-        task_a: function(task, args) { console.log(args.a); task.pass(); },
+        task_a: function(task, arg) { console.log(arg.a); task.pass(); },
                                ////                //////
-        task_b: function(task, args) { console.log(args.b); task.pass(); },
-        task_c: function(task, args) { console.log(args.c); task.pass(); },
-        task_d: function(task, args) { console.log(args.d); task.pass(); },
+        task_b: function(task, arg) { console.log(arg.b); task.pass(); },
+        task_c: function(task, arg) { console.log(arg.c); task.pass(); },
+        task_d: function(task, arg) { console.log(arg.d); task.pass(); },
     }, function(err, buffer) {
         if (err) {
             console.log(&quot;ng&quot;);
         } else {
             console.log(&quot;ok&quot;);
         }
-    }, { args: args });
+    }, { arg: arg });
        //////////////</code></pre>
 <ul>
-<li>Task.run から起動されるユーザタスク(task_a 〜 task_d)に引数を渡すには、Task.run の第四引数に <span style="color:gold">options.args</span> を設定します</li>
+<li>Task.run から起動されるユーザタスク(task_a 〜 task_d)に引数を渡すには、Task.run の第四引数に <span style="color:gold">options.arg</span> を設定します</li>
 </ul>
 </section>
 <section id="直列ユーザタスクの途中で失敗すると" class="level2">
@@ -663,7 +702,7 @@ var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
 </section>
 <section id="javascript-vs-promise-vs-task.js" class="level1">
 <h1>JavaScript vs Promise vs Task.js</h1>
-<section id="section-18" class="level2">
+<section id="section-20" class="level2">
 <h2></h2>
 <p>「非同期のユーザタスク A, B, C, D を、<br />A,B のグループと C,D のグループに分け、<br />2つのグループの完了を待つ」処理を、<br />それぞれの方法で実装してみます</p>
 <ul>
@@ -858,7 +897,7 @@ task.pass();</code></pre>
 </section>
 <section id="まとめ-1" class="level1">
 <h1>まとめ</h1>
-<section id="section-19" class="level2">
+<section id="section-21" class="level2">
 <h2></h2>
 <p>Task.js は以下の特徴を備えています</p>
 <ul>
@@ -869,7 +908,7 @@ task.pass();</code></pre>
 <li>Junction と Task.run を組み合わせて <strong>スッキリ</strong> としたコードが書けます</li>
 </ul>
 </section>
-<section id="section-20" class="level2">
+<section id="section-22" class="level2">
 <h2></h2>
 <p>(ε・◇・)з o O ( Task.js マジ オススメ</p>
 </section>
