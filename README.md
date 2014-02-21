@@ -6,9 +6,10 @@ Task.js is counter based task executor.
 
 # Document
 
-https://github.com/uupaa/Task.js/wiki/Task
+- http://uupaa.github.io/Task.js/slide/
+- https://github.com/uupaa/Task.js/wiki/Task
 
-# Install dependency tools
+# Install development dependency tools
 
 ```sh
 $ brew install closure-compiler
