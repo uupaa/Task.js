@@ -74,17 +74,18 @@
 </section>
 <section id="section-1" class="level2">
 <h2></h2>
-<p>今日紹介する <strong><a href="https://github.com/uupaa/Task.js">Task.js</a></strong> も、非同期プログラミングを支援するライブラリです。</p>
+<p>今日紹介する <strong><a href="https://github.com/uupaa/Task.js">Task.js</a></strong> も、非同期プログラミングを支援するライブラリです</p>
 <hr />
 <p>( Task.js は <strong><a href="http://www.slideshare.net/uupaa/flowjs">Flow.js</a></strong><a href="#section"></a> の改良版です )</p>
 </section>
 <section id="section-2" class="level2">
 <h2></h2>
-<p><strong>Task.js</strong> は、Node.js, Browser, WebWorker 上で動作し、かつ軽量です。<br />環境に依存するコードや複雑なトリックも使っていないため、どこでも動作します。</p>
+<p><strong>Task.js</strong> は、Node.js, Browser, WebWorkers 上で動作し、かつ軽量です</p>
+<p><br /> 環境に依存するコードや、複雑なトリックに依存しない作りになっているため、どこでも動作します</p>
 </section>
 <section id="section-3" class="level2">
 <h2></h2>
-<p>Task.js を導入すると、非同期処理やブラウザのサポート状況に悩まさず、 ロジックのコーディングに集中できます。</p>
+<p>Task.js を導入すると、非同期処理やブラウザのサポート状況に悩まされず、 ロジックのコーディングに集中できます</p>
 <!-- ----------------------------------------------------- -->
 
 </section>
@@ -166,10 +167,10 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 </section>
 <section id="section-7" class="level2">
 <h2></h2>
-<p>Task.js の基本はこれだけです。</p>
+<p>Task.js の基本はこれだけです</p>
 <hr />
 
-<p>では次に 応用編です。</p>
+<p>では次に 応用編です</p>
 <!-- ----------------------------------------------------- -->
 
 </section>
@@ -581,8 +582,8 @@ Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
 <li>ユーザタスク名を <strong><code>&gt;</code></strong> と <strong><code>+</code></strong> でつなぐ事で、ユーザタスクの前後間の流れを定義していきます</li>
 </ul>
 </section>
-<section id="並列ユーザタスク" class="level2">
-<h2>並列ユーザタスク</h2>
+<section id="ユーザタスクの並列化" class="level2">
+<h2>ユーザタスクの並列化</h2>
 <pre class="js"><code>
 Task.run(&quot;task_a + task_b&quot;, {
     task_a: function(task) { task.pass(); },
@@ -592,8 +593,8 @@ Task.run(&quot;task_a + task_b&quot;, {
 <li>並列に実行するユーザタスク を <strong><code>+</code></strong> でつなぐと、それらは同時に実行されます</li>
 </ul>
 </section>
-<section id="直列ユーザタスク" class="level2">
-<h2>直列ユーザタスク</h2>
+<section id="ユーザタスクの直列化" class="level2">
+<h2>ユーザタスクの直列化</h2>
 <pre class="js"><code>Task.run(&quot;task_a &gt; task_b&quot;, {
     task_a: function(task) { task.pass(); },
     task_b: function(task) { task.pass(); },
@@ -602,8 +603,8 @@ Task.run(&quot;task_a + task_b&quot;, {
 <li>直列に実行するユーザタスクを <strong><code>&gt;</code></strong> でつなぐと、それらは順番に実行されます</li>
 </ul>
 </section>
-<section id="遅延ユーザタスク" class="level2">
-<h2>遅延ユーザタスク</h2>
+<section id="sleepタスク" class="level2">
+<h2>sleepタスク</h2>
 <pre class="js"><code>Task.run(&quot;task_a &gt; 1000 &gt; task_b&quot;, {
     task_a: function(task) { task.pass(); },
     task_b: function(task) { task.pass(); },
@@ -613,13 +614,13 @@ Task.run(&quot;task_a + task_b&quot;, {
 <li>上記の例では、task_a 実行後に <strong>1000ms</strong> 待機し、その後に task_b を実行します</li>
 </ul>
 </section>
-<section id="直列ユーザタスクの省略記法" class="level2">
-<h2>直列ユーザタスクの省略記法</h2>
+<section id="直列化したタスクの省略記法" class="level2">
+<h2>直列化したタスクの省略記法</h2>
 <pre class="js"><code>function task_a(task) { task.pass(); }
 function task_b(task) { task.pass(); }
 function task_c(task) { task.pass(); }
 
-// このような直列ユーザタスクは
+// このような直列化したユーザタスクは
 Task.run(&quot;task_a &gt; task_b &gt; task_c&quot;, {
     task_a: task_a,
     task_b: task_b,
@@ -632,8 +633,8 @@ Task.run(&quot;&quot;, [task_a, task_b, task_c], callback);</code></pre>
 <li>ユーザタスクの配列を指定すると、順番に実行します</li>
 </ul>
 </section>
-<section id="直列並列遅延ユーザタスクを組み合わせる" class="level2">
-<h2>直列/並列/遅延ユーザタスクを組み合わせる</h2>
+<section id="直列並列sleepを組み合わせる" class="level2">
+<h2>直列/並列/sleepを組み合わせる</h2>
 <pre class="js"><code>Task.run(&quot;a &gt; b + c &gt; 1000 &gt; d&quot;, {
     a: function(task) { task.pass(); },
     b: function(task) { task.pass(); },
@@ -672,19 +673,19 @@ var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
 <li>Task.run から起動されるユーザタスク(task_a 〜 task_d)に引数を渡すには、Task.run の第四引数に <span style="color:gold">options.arg</span> を設定します</li>
 </ul>
 </section>
-<section id="直列ユーザタスクの途中で失敗すると" class="level2">
-<h2>直列ユーザタスクの途中で失敗すると</h2>
+<section id="直列化したユーザタスクが途中で失敗すると" class="level2">
+<h2>直列化したユーザタスクが途中で失敗すると</h2>
 <pre class="js"><code>Task.run(&quot;task_a &gt; task_b&quot;, {
     task_a: function(task) { task.miss(); },
     task_b: function(task) { task.pass(); }, // task_b は実行されません
 }, callback);</code></pre>
 <ul>
-<li>直列ユーザタスクの途中で失敗すると後続のユーザタスクは実行されません</li>
+<li>直列化したユーザタスクの途中で失敗すると後続のユーザタスクは実行されません</li>
 <li>task_a が失敗した場合は、後続の task_b は実行しません</li>
 </ul>
 </section>
-<section id="並列ユーザタスクの一部が失敗すると" class="level2">
-<h2>並列ユーザタスクの一部が失敗すると</h2>
+<section id="並列化したユーザタスクの一部が失敗すると" class="level2">
+<h2>並列化したユーザタスクの一部が失敗すると</h2>
 <pre class="js"><code>Task.run(&quot;task_c + task_d + task_e&quot;, {
     task_c: function(task) {
         setTimeout(function() { task.miss() }, 1000); // 1000ms 後に失敗
@@ -693,7 +694,7 @@ var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
     task_e: function(task) { task.pass(); }, // task_c が中断しても task_e は中断しません
 }, callback);</code></pre>
 <ul>
-<li>並列ユーザタスクの一部が失敗しても、同じグループに属する並列実行ユーザタスクは中断しません</li>
+<li>並列化したユーザタスクの一部が失敗しても、同じグループに属する並列実行ユーザタスクは中断しません</li>
 <li>task_c が途中で失敗した場合でも、task_d と task_e は中断しません</li>
 </ul>
 <!-- ----------------------------------------------------- -->
