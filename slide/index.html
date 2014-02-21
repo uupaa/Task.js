@@ -121,6 +121,13 @@
 <li>コマンド一発で、実行中の同期/非同期関数を一覧したい</li>
 </ul>
 </section>
+<section id="仕様変更にも強い実装にしたい" class="level2">
+<h2>仕様変更にも強い実装にしたい</h2>
+<ul>
+<li>UIアニメーションや、ゲームのアニメーションの流れや順番は、 クオリティアップの段階で頻繁に修正が入るが、 それらを変更に強い形で、データ化またはコード化できないか</li>
+<li>順番を変えたいだけなのに、 コードをガバっと変更する感じの実装はつらい</li>
+</ul>
+</section>
 <section id="section-4" class="level2">
 <h2></h2>
 <p>Task.js はこれら全ての<br /><strong>Needs</strong> と <strong>Wants</strong> を満たしてくれます</p>
@@ -132,12 +139,16 @@
 </section>
 <section id="task.js-の基本" class="level1">
 <h1>Task.js の基本</h1>
-<pre class="js"><code>function callback(err) { }
+<pre class="js"><code>function callback(err) {
+    if (err) {
+        console.log(&quot;エラーが発生しました: &quot; + err.message);
+    }
+}
 function userTask1() { task.pass(); } // ユーザタスク終了で task.pass() を呼ぶ
 function userTask2() { task.miss(); } // ユーザタスク失敗で task.miss() を呼ぶ
 
-var taskCount = 2;
-var task = new Task(taskCount, callback);
+var userTaskCount = 2;
+var task = new Task(userTaskCount, callback);
 
 userTask1();                 // 同期ユーザタスク: すぐに userTask1 を呼ぶ
 setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってから userTask1 を呼ぶ</code></pre>
@@ -145,23 +156,22 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 <h2></h2>
 <ul>
 <li>Task.js では、ユーザが用意する同期/非同期処理を<br /> <strong>ユーザータスク</strong> と呼びます</li>
-<li>var task = new Task( <strong>taskCount</strong>, ... ) は、<strong>task.pass()</strong> が2回呼ばれるのを <strong>待ちます</strong></li>
-<li>task.pass() が2回呼ばれると、待機を終了し <strong>callback</strong> を呼びます</li>
+<li>var task = new Task( <strong>2</strong>, <strong>callback</strong> ) は、<strong>task.pass()</strong> が2回呼ばれるのを <strong>待ちます</strong></li>
 </ul>
 </section>
 <section id="section-6" class="level2">
 <h2></h2>
 <ul>
-<li>task.pass() を2回呼ぶと <strong>待機成功</strong> で終了します</li>
-<li>task.miss() を1回でも呼ぶと <strong>待機失敗</strong> で終了します</li>
+<li><strong>task.pass()</strong> を2回呼ぶと <strong>待機成功</strong> で終了し <strong>callback</strong> が呼ばれます</li>
+<li><strong>task.miss()</strong> を1回呼ぶと <strong>待機失敗</strong> で終了し <strong>callback</strong> が呼ばれます</li>
 <li>callback( <strong>err</strong> ) は待機成功で null,<br /> 待機失敗で Error オブジェクトになります</li>
 </ul>
 </section>
 <section id="まとめ" class="level2">
 <h2>まとめ</h2>
 <ol type="1">
-<li><strong>new Task</strong>(taskCount) で待機開始</li>
-<li>ユーザタスク成功で <strong>task.pass()</strong> を、<br /> 失敗で <strong>task.miss()</strong> を呼ぶ</li>
+<li><strong>new Task</strong>( <strong>待機するユーザタスク数</strong> , <strong>callback</strong> ) で待機開始</li>
+<li>ユーザタスク成功で <strong>task.pass()</strong> を、失敗で <strong>task.miss()</strong> を呼ぶ</li>
 <li>待機終了で <strong>callback</strong> が呼ばれる</li>
 </ol>
 </section>
@@ -188,8 +198,8 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">done</td>
-<td style="text-align: left;">task.done(err)</td>
+<td style="text-align: left;">失敗を許容</td>
+<td style="text-align: left;">task.missable()</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">バッファ</td>
@@ -208,8 +218,8 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 <td style="text-align: left;">task.extend()</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">失敗を許容</td>
-<td style="text-align: left;">task.missable()</td>
+<td style="text-align: left;">pass or miss</td>
+<td style="text-align: left;">task.done(err)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Arrayを変換</td>
@@ -225,37 +235,24 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 
 </section>
 </section>
-<section id="task.done" class="level1">
-<h1>task.done()</h1>
+<section id="task.missable" class="level1">
+<h1>task.missable()</h1>
+<pre class="js"><code>function callback(err) { }
+
+var task = new Task(3, callback);
+
+task.missable(2);
+task.miss(); // ユーザタスク失敗(missableが2なので許容する)
+task.miss(); // ユーザタスク失敗(missableが2なので許容する)
+task.miss(); // ユーザタスク失敗(missableが2なので待機失敗) -&gt; callback(Error)</code></pre>
 <section id="section-9" class="level2">
 <h2></h2>
-<pre class="js"><code>function callback(err, buffer) {
-    alert(err.message); // エラーメッセージ
-}
-
-var task = new Task(1, callback);
-
-task.done(new Error(&quot;エラーメッセージ&quot;));</code></pre>
 <ul>
-<li><strong>task.done</strong> に Error オブジェクトを渡すと <strong>task.message(err.message).miss()</strong> として動作します</li>
-<li>task.done の引数を指定しないか falsy な値(null, 0, undefined, &quot;&quot;) を渡すと <strong>task.pass()</strong> として動作します</li>
+<li>ユーザタスクが3つあり、そのうち2回まで失敗を許容する場合は、new Task(3).<span style="color:gold">missable(2)</span> とします</li>
+<li><strong>task.missable(n)</strong> で失敗を許容する回数を設定できます</li>
+<li>task.missable(0) の状態で <strong>task.miss()</strong> を一度でも呼ぶと待機失敗で終了します</li>
+<li>初期状態は task.missble(0) です</li>
 </ul>
-</section>
-<section id="section-10" class="level2">
-<h2></h2>
-<ul>
-<li>task.done を使うと Error オブジェクトの有無で <strong>task.pass()</strong> または <strong>task.miss()</strong> を呼び分けている処理をスッキリと記述できます</li>
-</ul>
-<pre class="js"><code>// このようなありがちなコードが
-
-if (err) { // Error Object
-    task.message(err.message).miss();
-} else {
-    task.pass();
-}</code></pre>
-<pre class="js"><code>// 一行で書けます
-
-task.done(err);</code></pre>
 <!-- ----------------------------------------------------- -->
 
 </section>
@@ -275,11 +272,11 @@ task.push(&quot;value1&quot;);
 task.set(&quot;key2&quot;, &quot;value2&quot;);
 task.pass();</code></pre>
 <ul>
-<li>buffer はデータの入れ物(配列)です</li>
+<li>buffer の実体は配列( Array )です</li>
 <li>buffer に値を設定し callback で値を受け取る事ができます</li>
 <li><strong>task.push(value)</strong> は buffer.push(value) を行います</li>
 <li><strong>task.set(key,value)</strong> は buffer[key] = value を行います</li>
-<li><strong>task.buffer()</strong> からもアクセスできます</li>
+<li><strong>task.buffer()</strong> で配列に直接アクセスも可能です</li>
 </ul>
 </section>
 <section id="shared-buffer" class="level2">
@@ -333,7 +330,7 @@ Task.dump(&quot;TEST&quot;);
 <li>Task の第三引数で Task 名を指定し、<strong>Task.dump(taskName)</strong> で絞り込めます</li>
 </ul>
 </section>
-<section id="section-11" class="level2">
+<section id="section-10" class="level2">
 <h2></h2>
 <pre class="js"><code>Task.drop();</code></pre>
 <ul>
@@ -352,10 +349,10 @@ Task.dump(&quot;TEST&quot;);
 var task = new Task(100, callback).missable(100);
 
 task.exit(); // 強制終了 -&gt; callback(new Error(...))</code></pre>
-<section id="section-12" class="level2">
+<section id="section-11" class="level2">
 <h2></h2>
 <ul>
-<li><strong>task.exit()</strong> を使うと、 taskCount や missable の状態に関わらず、待機失敗で強制終了します</li>
+<li><strong>task.exit()</strong> を使うと、 userTaskCount や missable の状態に関わらず、待機失敗で強制終了します</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -364,24 +361,27 @@ task.exit(); // 強制終了 -&gt; callback(new Error(...))</code></pre>
 <section id="task.message" class="level1">
 <h1>task.message()</h1>
 <pre class="js"><code>var task = new Task(1, function(err) {
-    console.log(err.message); // -&gt; &quot;O_o&quot;
+    if (err) {
+        console.log(err.message); // -&gt; &quot;O_o&quot;
+    }
 });
 
 function userTask(task) {
     try {
-        throw new Error(&quot;O_o&quot;);
-        task.pass();
+        throw new Error(&quot;O_o&quot;); // 例外発生!
+        task.pass(); // ここには到達しない
     } catch (err) {
-        task.message(err.message).miss();
+        task.message(err.message).miss(); // task.message(&quot;O_o&quot;) を設定
     }
 }
 
 userTask(task);</code></pre>
-<section id="section-13" class="level2">
+<section id="section-12" class="level2">
 <h2></h2>
 <ul>
-<li>例外のハンドリングはユーザタスク側で行い、<strong>task.miss()</strong> を呼んでください</li>
-<li><strong>task.message()</strong>を使うと、待機失敗時に callback に渡される Errorオブジェクトのメッセージを設定できます</li>
+<li>エラーハンドリングはユーザタスク側で行ってください</li>
+<li>問題が発生したら <strong>task.miss()</strong> を呼んでください</li>
+<li><strong>task.message()</strong> を使うと、待機失敗時に callback に渡される Errorオブジェクトのメッセージを設定できます</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -393,11 +393,12 @@ userTask(task);</code></pre>
 
 var task = new Task(1, callback);
 
-task.extend(1); // taskCount += 1;
-task.pass();    // ユーザタスク成功(taskCountが2なので待機する)
-task.pass();    // ユーザタスク失敗(taskCountが2なので終了する) -&gt; callback(null)</code></pre>
+task.extend(1); // userTaskCount += 1;
+task.pass();    // ユーザタスク成功(userTaskCountは2なので待機する)
+task.pass();    // ユーザタスク成功(userTaskCountは2なので待機成功で終了する)
+                //      -&gt; callback(null)</code></pre>
 <ul>
-<li>動的に taskCount を +1 するには、<strong>task.extend(1)</strong> とします</li>
+<li>動的に userTaskCount を +1 するには、<strong>task.extend(1)</strong> とします</li>
 <li>次々にユーザタスクが増えるケースで使います</li>
 </ul>
 <figure>
@@ -406,23 +407,36 @@ task.pass();    // ユーザタスク失敗(taskCountが2なので終了する) 
 <!-- ----------------------------------------------------- -->
 
 </section>
-<section id="task.missable" class="level1">
-<h1>task.missable()</h1>
-<pre class="js"><code>function callback(err) { }
-
-var task = new Task(3, callback);
-
-task.missable(2);
-task.miss(); // ユーザタスク失敗(missableが2なので許容する)
-task.miss(); // ユーザタスク失敗(missableが2なので許容する)
-task.miss(); // ユーザタスク失敗(missableが2なので待機失敗) -&gt; callback(Error)</code></pre>
-<section id="section-14" class="level2">
+<section id="task.done" class="level1">
+<h1>task.done()</h1>
+<section id="section-13" class="level2">
 <h2></h2>
 <ul>
-<li>ユーザタスクが3つあり、そのうち2回まで失敗を許容する場合は、new Task(3).<span style="color:gold">missable(2)</span> とします</li>
-<li><strong>task.missable(n)</strong> で失敗を許容する回数を設定できます</li>
-<li>task.missable(0) の状態で <strong>task.miss()</strong> を一度でも呼ぶと待機失敗で終了します</li>
-<li>初期状態は task.missble(0) です</li>
+<li>task.done を使うと Error オブジェクトの有無で <strong>task.pass()</strong> または <strong>task.miss()</strong> を呼び分けている処理をスッキリと記述できます</li>
+</ul>
+<pre class="js"><code>// このようなありがちなコードが
+
+if (err) { // Error Object
+    task.message(err.message).miss();
+} else {
+    task.pass();
+}</code></pre>
+<pre class="js"><code>// 一行で書けます
+
+task.done(err);</code></pre>
+</section>
+<section id="section-14" class="level2">
+<h2></h2>
+<pre class="js"><code>function callback(err, buffer) {
+    alert(err.message); // エラーメッセージ
+}
+
+var task = new Task(1, callback);
+
+task.done(new Error(&quot;エラーメッセージ&quot;));</code></pre>
+<ul>
+<li><strong>task.done</strong> に Error オブジェクトを渡すと <strong>task.message(err.message).miss()</strong> として動作します</li>
+<li>task.done の引数を指定しないか<br /> falsy な値(null, 0, undefined, &quot;&quot;) を渡すと <strong>task.pass()</strong> として動作します</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -436,7 +450,8 @@ task.miss(); // ユーザタスク失敗(missableが2なので待機失敗) -&gt
 
 Task.flatten(array); // -&gt; [1, 2, 3, 4]</code></pre>
 <ul>
-<li><strong>Task.flatten(array)</strong>を使うと、ネストした2次元配列を1次元配列に展開できます。</li>
+<li><strong>Task.flatten(array)</strong>を使うと、ネストした2次元配列を1次元配列に展開できます</li>
+<li>2次元配列を含んだ Buffer の値を展開する時に便利です</li>
 </ul>
 <pre class="js"><code>Task.flatten([ [1,2], [3,4], [ [5,6] ] ]); // -&gt; [1, 2, 3, 4, [5, 6] ]</code></pre>
 <ul>
@@ -452,6 +467,7 @@ Task.arraynize(array); // -&gt; [1, 2, 3] になる</code></pre>
 <ul>
 <li><strong>Task.arraynize(array)</strong>は、新しい配列を作り array の値をコピーします</li>
 <li>array のプロパティ(&quot;key&quot;, &quot;value&quot;)は <strong>コピーしません</strong></li>
+<li>Buffer の値をクローンするために利用できます</li>
 </ul>
 </section>
 <section id="task.objectize" class="level2">
@@ -463,6 +479,7 @@ Task.objectize(array); // -&gt; { 0: 1, 1: 2, 2: 3, key: &quot;value&quot; }</co
 <ul>
 <li><strong>Task.objectize(array)</strong>は、新しい Object を作り array の値をコピーします</li>
 <li>array のプロパティ(&quot;key&quot;, &quot;value&quot;)も <strong>コピーします</strong></li>
+<li>Buffer の値をオブジェクトとしてクローンするために利用できます</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -653,38 +670,39 @@ Task.run(&quot;&quot;, [task_a, task_b, task_c], callback);</code></pre>
 </section>
 <section id="ユーザタスクに引数を渡す" class="level2">
 <h2>ユーザタスクに引数を渡す</h2>
-<pre class="js"><code>var arg = { a: 1, b: 2, c : 3, d: 4 };
-var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
-        task_a: function(task, arg) { console.log(arg.a); task.pass(); },
-                               ////                //////
-        task_b: function(task, arg) { console.log(arg.b); task.pass(); },
-        task_c: function(task, arg) { console.log(arg.c); task.pass(); },
-        task_d: function(task, arg) { console.log(arg.d); task.pass(); },
-    }, function(err, buffer) {
-        if (err) {
-            console.log(&quot;ng&quot;);
-        } else {
-            console.log(&quot;ok&quot;);
-        }
-    }, { arg: arg });
-       //////////////</code></pre>
+<pre class="js"><code>var argumentForUserTask = { a: 1, b: 2, c : 3, d: 4 };
+
+Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
+    task_a: function(task, arg) { console.log(arg.a); task.pass(); },
+                           ///                /////
+    task_b: function(task, arg) { console.log(arg.b); task.pass(); },
+    task_c: function(task, arg) { console.log(arg.c); task.pass(); },
+    task_d: function(task, arg) { console.log(arg.d); task.pass(); },
+}, function(err, buffer) {
+    if (err) {
+        console.log(&quot;ng&quot;);
+    } else {
+        console.log(&quot;ok&quot;);
+    }
+}, { arg: argumentForUserTask });
+     ////////////////////////</code></pre>
 <ul>
 <li>Task.run から起動されるユーザタスク(task_a 〜 task_d)に引数を渡すには、Task.run の第四引数に <span style="color:gold">options.arg</span> を設定します</li>
 </ul>
 </section>
-<section id="直列化したユーザタスクが途中で失敗すると" class="level2">
-<h2>直列化したユーザタスクが途中で失敗すると</h2>
+<section id="直列化したユーザタスクの失敗" class="level2">
+<h2>直列化したユーザタスクの失敗</h2>
 <pre class="js"><code>Task.run(&quot;task_a &gt; task_b&quot;, {
     task_a: function(task) { task.miss(); },
     task_b: function(task) { task.pass(); }, // task_b は実行されません
 }, callback);</code></pre>
 <ul>
-<li>直列化したユーザタスクの途中で失敗すると後続のユーザタスクは実行されません</li>
+<li><strong>直列</strong> 化したユーザタスクの <strong>途中で失敗</strong> すると後続のユーザタスクは <strong>実行されません</strong></li>
 <li>task_a が失敗した場合は、後続の task_b は実行しません</li>
 </ul>
 </section>
-<section id="並列化したユーザタスクの一部が失敗すると" class="level2">
-<h2>並列化したユーザタスクの一部が失敗すると</h2>
+<section id="並列化したユーザタスクの失敗" class="level2">
+<h2>並列化したユーザタスクの失敗</h2>
 <pre class="js"><code>Task.run(&quot;task_c + task_d + task_e&quot;, {
     task_c: function(task) {
         setTimeout(function() { task.miss() }, 1000); // 1000ms 後に失敗
@@ -693,8 +711,26 @@ var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
     task_e: function(task) { task.pass(); }, // task_c が中断しても task_e は中断しません
 }, callback);</code></pre>
 <ul>
-<li>並列化したユーザタスクの一部が失敗しても、同じグループに属する並列実行ユーザタスクは中断しません</li>
+<li><strong>並列</strong> 化したユーザタスクの <strong>一部が失敗しても</strong> 、同じグループに属する並列実行ユーザタスクは <strong>中断しません</strong></li>
 <li>task_c が途中で失敗した場合でも、task_d と task_e は中断しません</li>
+</ul>
+</section>
+<section id="バリデーション" class="level2">
+<h2>バリデーション</h2>
+<pre class="js"><code>Task.run(&quot;task_a + task_b + task_c&quot;, {
+    unknown_task_name: function(task) {},
+    bad_argument: function(/* task */) {}
+}, function() {});</code></pre>
+<pre class="js"><code>&gt; TypeError: Task.run(taskRoute, taskMap)</code></pre>
+<ul>
+<li>存在しないタスク名や、引数を受け取らないユーザタスクを検出するとエラーになります</li>
+</ul>
+</section>
+<section id="非同期処理のデータ化" class="level2">
+<h2>非同期処理のデータ化</h2>
+<ul>
+<li>これまで見てきたように、Task.run を使うと、非同期処理を変更に強い形(文字列,DSL)としてデータ化できます</li>
+<li>Task.run を使って仕様変更が入りやすい非同期処理(アニメーションなど)を組むと、将来の仕様変更に対して一定の強度を持たせることができます</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -704,7 +740,7 @@ var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
 <h1>JavaScript vs Promise vs Task.js</h1>
 <section id="section-20" class="level2">
 <h2></h2>
-<p>「非同期のユーザタスク A, B, C, D を、<br />A,B のグループと C,D のグループに分け、<br />2つのグループの完了を待つ」処理を、<br />それぞれの方法で実装してみます</p>
+<p>「非同期のユーザタスク <strong>A, B, C, D</strong> を、<br /><strong>A, B のグループ</strong> と <strong>C, D のグループ</strong> に分け、<br /><strong>2つのグループの完了を待つ</strong>」処理を、<br />それぞれの方法で実装してみます</p>
 <ul>
 <li>JavaScript</li>
 <li>jQuery.Deferred</li>
@@ -716,23 +752,23 @@ var junction = Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
 <section id="javascript-version" class="level2">
 <h2>JavaScript Version</h2>
 <pre class="js"><code>function waitForAsyncProcesses(finishedCallback) {
-    var taskCount1 = [A, B].length;
-    var taskCount2 = [C, D].length;
-    var taskCount3 = 2; // Junction
+    var remainTaskGroupCount1 = [A, B].length; // 2
+    var remainTaskGroupCount2 = [C, D].length; // 2
+    var remainJunctionTaskCount = 2;
 
-    function A() { setTimeout(function() { done_group1(); }, 10);  }
-    function B() { setTimeout(function() { done_group1(); }, 100); }
-    function C() { setTimeout(function() { done_group2(); }, 20);  }
-    function D() { setTimeout(function() { done_group2(); }, 200); }
+    function A() { setTimeout(function() { doneTaskGroup1(); }, 10);  }
+    function B() { setTimeout(function() { doneTaskGroup1(); }, 100); }
+    function C() { setTimeout(function() { doneTaskGroup2(); }, 20);  }
+    function D() { setTimeout(function() { doneTaskGroup2(); }, 200); }
 
-    function done_group1() {
-        if (--taskCount1 &lt;= 0) { junction(); }
+    function doneTaskGroup1() {
+        if (--remainTaskGroupCount1 &lt;= 0) { junction(); }
     }
-    function done_group2() {
-        if (--taskCount2 &lt;= 0) { junction(); }
+    function doneTaskGroup2() {
+        if (--remainTaskGroupCount2 &lt;= 0) { junction(); }
     }
     function junction() {
-        if (--taskCount3 &lt;= 0) { finishedCallback(); }
+        if (--remainJunctionTaskCount &lt;= 0) { finishedCallback(); }
     }
     A(); B(); C(); D();
 }
@@ -741,8 +777,8 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</co
 <section id="jquery.deferred-version" class="level2">
 <h2>jQuery.Deferred Version</h2>
 <pre class="js"><code>function waitForAsyncProcesses(finishedCallback) {
-    var promises1 = [A(), B()];
-    var promises2 = [C(), D()];
+    var promises1 = [A(), B()]; // 2
+    var promises2 = [C(), D()]; // 2
 
     function A() {
         var dfd = jQuery.Deferred();
@@ -766,8 +802,8 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</co
     }
 
     jQuery.when(
-        jQuery.when.apply(null, promises1),
-        jQuery.when.apply(null, promises2)
+        jQuery.when.apply(null, promises1), // task group1
+        jQuery.when.apply(null, promises2)  // task group2
     ).done(function() {
         finishedCallback()
     });
@@ -810,15 +846,14 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); })</cod
             D: function(task) { setTimeout(function() { task.pass(); }, 200); },
         };
     var junction = new Task(2, finishedCallback);
-    var task1 = new Task(2, junction);
-    var task2 = new Task(2, junction);
+    var taskGroup1 = new Task(2, junction);
+    var taskGroup2 = new Task(2, junction);
 
-    taskMap.A(task1);
-    taskMap.B(task1);
-    taskMap.C(task2);
-    taskMap.D(task2);
+    taskMap.A(taskGroup1);
+    taskMap.B(taskGroup1);
+    taskMap.C(taskGroup2);
+    taskMap.D(taskGroup2);
 }
-
 waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</code></pre>
 </section>
 <section id="task-junction-task.run-version" class="level2">
@@ -832,11 +867,12 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</co
         };
     var junction = new Task(2, finishedCallback);
 
-    Task.run(&quot;A &gt; B&quot;, taskMap, junction);
-    Task.run(&quot;C &gt; D&quot;, taskMap, junction);
+    Task.run(&quot;A + B&quot;, taskMap, junction);
+    Task.run(&quot;C + D&quot;, taskMap, junction);
 }
 
 waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</code></pre>
+<p>(ε・◇・)з o O ( <strong>スッキリ</strong></p>
 <!-- ----------------------------------------------------- -->
 </section>
 </section>
