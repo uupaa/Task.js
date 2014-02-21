@@ -1,6 +1,6 @@
 {
   "name":           "uupaa.task.js",
-  "version":        "0.8.13",
+  "version":        "0.8.14",
   "description":    "Counter based task executor.",
   "url":            "https://github.com/uupaa/Task.js",
   "keywords":       ["async", "task", "flow", "util", "uupaa"],
@@ -10,14 +10,17 @@
     "url":          "https://github.com/uupaa/Task.js.git"
   },
   "scripts": {
-    "start":        "node node_modules/uupaa.minify.js --keep --output ./lib/Task.min.js ./lib/Task.js",
-    "test":         "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js; open test/index.html"
+    "watch":        "node node_modules/uupaa.watch.js --verbose --action build ./lib/Task.js",
+    "build":        "node node_modules/uupaa.minify.js --keep --output ./lib/Task.min.js ./lib/Task.js",
+    "test":         "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js; open test/index.html",
+    "lint":         "plato --title Task.js --jshint .jshintrc -d lint/plato lib/Task.js; open lint/plato/index.html"
   },
   "dependencies": {
   },
   "devDependencies": {
-    "uupaa.test.js":    "",
     "uupaa.help.js":    "",
+    "uupaa.test.js":    "",
+    "uupaa.watch.js":   "",
     "uupaa.minify.js":  ""
   },
   "lib":            "./lib/",

@@ -4,26 +4,32 @@ Task.js
 Task.js is counter based task executor.
 
 
-# API Document
+# Document
 
 https://github.com/uupaa/Task.js/wiki/Task
 
-# Install, Setup modules
+# Install dependency tools
 
 ```sh
 $ brew install closure-compiler
+$ brew install node
+$ npm install -g plato
+```
 
+# Clone Repository and Install
+
+```sh
 $ git clone git@github.com:uupaa/Task.js.git
 $ cd Task.js
 $ npm install
 ```
 
-# Minify
+# Build and Minify
 
 ```sh
-$ npm start
+$ npm run build
 
-  or
+    or
 
 $ node node_modules/uupaa.minify.js --keep --output ./lib/Task.min.js ./lib/Task.js
 ```
@@ -31,7 +37,17 @@ $ node node_modules/uupaa.minify.js --keep --output ./lib/Task.min.js ./lib/Task
 # Test
 
 ```sh
+$ npm run test
+
+  or
+
 $ npm test
+```
+
+# Lint
+
+```sh
+$ npm run lint
 ```
 
 # for Node.js
