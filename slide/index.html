@@ -635,7 +635,7 @@ Task.run(&quot;&quot;, [task_a, task_b, task_c], callback);</code></pre>
 </section>
 <section id="直列並列sleepを組み合わせる" class="level2">
 <h2>直列/並列/sleepを組み合わせる</h2>
-<pre class="js"><code>Task.run(&quot;a &gt; b + c &gt; 1000 &gt; d&quot;, {
+<pre class="js"><code>Task.run(&quot;a &gt; b + c + 1000 &gt; d&quot;, {
     a: function(task) { task.pass(); },
     b: function(task) { task.pass(); },
     c: function(task) { task.pass(); },
@@ -646,8 +646,7 @@ Task.run(&quot;&quot;, [task_a, task_b, task_c], callback);</code></pre>
 <ol type="1">
 <li>a を実行します</li>
 <li>a の正常終了で、b と c を同時に実行します</li>
-<li>b と c が正常終了すると 1000ms 待機します</li>
-<li>1000ms 待機後に d を実行します</li>
+<li>b と c が正常終了しており sleep(1000) が終わっているなら d を実行します</li>
 <li>d が正常終了すると、callback を呼び出します</li>
 </ol></li>
 </ul>

@@ -589,7 +589,7 @@ Task.run("", [task_a, task_b, task_c], callback);
 ## 直列/並列/sleepを組み合わせる
 
 ```js
-Task.run("a > b + c > 1000 > d", {
+Task.run("a > b + c + 1000 > d", {
     a: function(task) { task.pass(); },
     b: function(task) { task.pass(); },
     c: function(task) { task.pass(); },
@@ -600,9 +600,8 @@ Task.run("a > b + c > 1000 > d", {
 - **`a > b + c + 1000 > d`** は、ユーザタスク a 〜 d を以下の順番で実行します
     1. a を実行します
     2. a の正常終了で、b と c を同時に実行します
-    3. b と c が正常終了すると 1000ms 待機します
-    4. 1000ms 待機後に d を実行します
-    5. d が正常終了すると、callback を呼び出します
+    3. b と c が正常終了しており sleep(1000) が終わっているなら d を実行します
+    4. d が正常終了すると、callback を呼び出します
 
 
 
