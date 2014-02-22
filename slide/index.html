@@ -436,7 +436,7 @@ var task = new Task(1, callback);
 task.done(new Error(&quot;エラーメッセージ&quot;));</code></pre>
 <ul>
 <li><strong>task.done</strong> に Error オブジェクトを渡すと <strong>task.message(err.message).miss()</strong> として動作します</li>
-<li>task.done の引数を指定しないか<br /> falsy な値(null, 0, undefined, &quot;&quot;) を渡すと <strong>task.pass()</strong> として動作します</li>
+<li>引数を指定しないか、Error オブジェクト以外なら <strong>task.pass()</strong> として動作します</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 

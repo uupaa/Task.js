@@ -373,8 +373,7 @@ task.done(new Error("エラーメッセージ"));
 ```
 
 - **task.done** に Error オブジェクトを渡すと **task.message(err.message).miss()** として動作します
-- task.done の引数を指定しないか  
-  falsy な値(null, 0, undefined, "") を渡すと **task.pass()** として動作します
+- 引数を指定しないか、Error オブジェクト以外なら **task.pass()** として動作します
 
 
 
