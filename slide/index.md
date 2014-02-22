@@ -288,6 +288,7 @@ task.exit(); // 強制終了 -> callback(new Error(...))
 
 # task.message()
 
+## 
 ```js
 var task = new Task(1, function(err) {
     if (err) {
@@ -307,12 +308,25 @@ function userTask(task) {
 userTask(task);
 ```
 
-## 
-
 - エラーハンドリングはユーザタスク側で行ってください
 - 問題が発生したら **task.miss()** を呼んでください
 - **task.message()** を使うと、待機失敗時に callback に渡される Errorオブジェクトのメッセージを設定できます
 
+##
+
+```js
+function userTask(task) {
+    try {
+        throw new Error("O_o"); // 例外発生!
+        task.pass(); // ここには到達しない
+    } catch (err) {
+      //task.message(err.message).miss(); // task.message("O_o") を設定
+        task.done(err);
+    }
+}
+```
+- 後述する **task.done(err)** を使うと、  
+  さらにスッキリ書けます
 
 <!-- ----------------------------------------------------- -->
 

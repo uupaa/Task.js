@@ -360,6 +360,8 @@ task.exit(); // 強制終了 -&gt; callback(new Error(...))</code></pre>
 </section>
 <section id="task.message" class="level1">
 <h1>task.message()</h1>
+<section id="section-12" class="level2">
+<h2></h2>
 <pre class="js"><code>var task = new Task(1, function(err) {
     if (err) {
         console.log(err.message); // -&gt; &quot;O_o&quot;
@@ -376,12 +378,25 @@ function userTask(task) {
 }
 
 userTask(task);</code></pre>
-<section id="section-12" class="level2">
-<h2></h2>
 <ul>
 <li>エラーハンドリングはユーザタスク側で行ってください</li>
 <li>問題が発生したら <strong>task.miss()</strong> を呼んでください</li>
 <li><strong>task.message()</strong> を使うと、待機失敗時に callback に渡される Errorオブジェクトのメッセージを設定できます</li>
+</ul>
+</section>
+<section id="section-13" class="level2">
+<h2></h2>
+<pre class="js"><code>function userTask(task) {
+    try {
+        throw new Error(&quot;O_o&quot;); // 例外発生!
+        task.pass(); // ここには到達しない
+    } catch (err) {
+      //task.message(err.message).miss(); // task.message(&quot;O_o&quot;) を設定
+        task.done(err);
+    }
+}</code></pre>
+<ul>
+<li>後述する <strong>task.done(err)</strong> を使うと、<br /> さらにスッキリ書けます</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -409,7 +424,7 @@ task.pass();    // ユーザタスク成功(userTaskCountは2なので待機成�
 </section>
 <section id="task.done" class="level1">
 <h1>task.done()</h1>
-<section id="section-13" class="level2">
+<section id="section-14" class="level2">
 <h2></h2>
 <ul>
 <li>task.done を使うと Error オブジェクトの有無で <strong>task.pass()</strong> または <strong>task.miss()</strong> を呼び分けている処理をスッキリと記述できます</li>
@@ -425,7 +440,7 @@ if (err) { // Error Object
 
 task.done(err);</code></pre>
 </section>
-<section id="section-14" class="level2">
+<section id="section-15" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err, buffer) {
     alert(err.message); // エラーメッセージ
@@ -487,7 +502,7 @@ Task.objectize(array); // -&gt; { 0: 1, 1: 2, 2: 3, key: &quot;value&quot; }</co
 </section>
 <section id="junction" class="level1">
 <h1>Junction</h1>
-<section id="section-15" class="level2">
+<section id="section-16" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) { }
 
@@ -503,7 +518,7 @@ var task2 = new Task(1, junction);</code></pre>
 <li>Junction を使うと Task の上下関係を記述できます</li>
 </ul>
 </section>
-<section id="section-16" class="level2">
+<section id="section-17" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) {
     console.log(&quot;finished&quot;);
@@ -523,7 +538,7 @@ lv4_task2.pass();</code></pre>
 <li>さらに上位の Junction がある場合は <strong>次々に伝播</strong> (バブルアップ)します</li>
 </ul>
 </section>
-<section id="section-17" class="level2">
+<section id="section-18" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) {
     console.log(&quot;finished&quot;);
@@ -541,7 +556,7 @@ lv4_task2.pass();</code></pre>
 <img src="./assets/img/nested.junction.png" />
 </figure>
 </section>
-<section id="section-18" class="level2">
+<section id="section-19" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err) {
     console.log(&quot;finished&quot;);
@@ -583,7 +598,7 @@ Task.run(&quot;c + d&quot;, taskMap, junction); // c と d を並列実行</code
 <li>Task の上下関係を定義する <strong>Junction</strong> と Task.run は組み合わせて利用できます</li>
 </ul>
 </section>
-<section id="section-19" class="level2">
+<section id="section-20" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err, buffer) {
 }
@@ -738,7 +753,7 @@ Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
 </section>
 <section id="javascript-vs-promise-vs-task.js" class="level1">
 <h1>JavaScript vs Promise vs Task.js</h1>
-<section id="section-20" class="level2">
+<section id="section-21" class="level2">
 <h2></h2>
 <p>「非同期のユーザタスク <strong>A, B, C, D</strong> を、<br /><strong>A, B のグループ</strong> と <strong>C, D のグループ</strong> に分け、<br /><strong>2つのグループの完了を待つ</strong>」処理を、<br />それぞれの方法で実装してみます</p>
 <ul>
@@ -933,7 +948,7 @@ task.pass();</code></pre>
 </section>
 <section id="まとめ-1" class="level1">
 <h1>まとめ</h1>
-<section id="section-21" class="level2">
+<section id="section-22" class="level2">
 <h2></h2>
 <p>Task.js は以下の特徴を備えています</p>
 <ul>
@@ -944,7 +959,7 @@ task.pass();</code></pre>
 <li>Junction と Task.run を組み合わせて <strong>スッキリ</strong> としたコードが書けます</li>
 </ul>
 </section>
-<section id="section-22" class="level2">
+<section id="section-23" class="level2">
 <h2></h2>
 <p>(ε・◇・)з o O ( Task.js マジ オススメ</p>
 </section>
