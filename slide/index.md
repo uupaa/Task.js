@@ -147,9 +147,9 @@ Task.js の基本はこれだけです
 | 失敗を許容       | task.missable() |
 | バッファ         | callback(buffer), task.buffer() |
 | デバッグ         | Task.dump(), Task.drop() |
-| 強制終了         | task.exit(), task.message() |
+| 強制終了         | task.exit() |
+| エラー制御       | task.message(), task.done(err) |
 | 待機数を拡張     | task.extend()   |
-| pass or miss     | task.done(err)  |
 | Arrayを変換      | Task.flatten(), Task.arraynize(), Task.objectize() |
 | Taskを連結       | Junction, Task.run() |
 
@@ -286,14 +286,12 @@ task.exit(); // 強制終了 -> callback(new Error(...))
 
 <!-- ----------------------------------------------------- -->
 
-# task.message()
+# task.done(), task.message()
 
-## 
+## Error Handling
 ```js
 var task = new Task(1, function(err) {
-    if (err) {
-        console.log(err.message); // -> "O_o"
-    }
+    if (err) { console.log(err.message); } // -> "O_o"
 });
 
 function userTask(task) {
@@ -304,7 +302,6 @@ function userTask(task) {
         task.message(err.message).miss(); // task.message("O_o") を設定
     }
 }
-
 userTask(task);
 ```
 
@@ -314,19 +311,50 @@ userTask(task);
 
 ##
 
+- **task.done** に Error オブジェクトを渡すと **task.message(err.message).miss()** として動作します
+- 引数を指定しないか、Error オブジェクト以外なら **task.pass()** として動作します
+- task.done を使うと Error オブジェクトの有無で **task.pass()** または **task.miss()** を呼び分けている処理をシンプルに記述できます
+
 ```js
-function userTask(task) {
+// このようなありがちなコードが
+
+if (err) { // Error Object
+    task.message(err.message).miss();
+} else {
+    task.pass();
+}
+```
+
+```js
+// こうなります
+
+task.done(err);
+```
+
+## 
+
+task.done() を使うと、先ほどのコードも
+```js
+
     try {
         throw new Error("O_o"); // 例外発生!
         task.pass(); // ここには到達しない
     } catch (err) {
-      //task.message(err.message).miss(); // task.message("O_o") を設定
+        task.message(err.message).miss(); // task.message("O_o") を設定
+    }
+```
+
+こう書けます
+```js
+
+    try {
+        throw new Error("O_o"); // 例外発生!
+        task.pass(); // ここには到達しない
+    } catch (err) {
         task.done(err);
     }
-}
 ```
-- 後述する **task.done(err)** を使うと、  
-  さらにスッキリ書けます
+
 
 <!-- ----------------------------------------------------- -->
 
@@ -347,49 +375,6 @@ task.pass();    // ユーザタスク成功(userTaskCountは2なので待機成�
 - 次々にユーザタスクが増えるケースで使います
 
 ![](./assets/img/task.extend.png)
-
-
-<!-- ----------------------------------------------------- -->
-
-# task.done()
-
-## 
-
-- task.done を使うと Error オブジェクトの有無で **task.pass()** または **task.miss()** を呼び分けている処理をスッキリと記述できます
-
-```js
-// このようなありがちなコードが
-
-if (err) { // Error Object
-    task.message(err.message).miss();
-} else {
-    task.pass();
-}
-```
-
-```js
-// 一行で書けます
-
-task.done(err);
-```
-
-
-## 
-
-```js
-function callback(err, buffer) {
-    alert(err.message); // エラーメッセージ
-}
-
-var task = new Task(1, callback);
-
-task.done(new Error("エラーメッセージ"));
-```
-
-- **task.done** に Error オブジェクトを渡すと **task.message(err.message).miss()** として動作します
-- 引数を指定しないか、Error オブジェクト以外なら **task.pass()** として動作します
-
-
 
 
 <!-- ----------------------------------------------------- -->
