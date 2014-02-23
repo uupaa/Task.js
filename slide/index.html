@@ -211,15 +211,15 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 </tr>
 <tr class="even">
 <td style="text-align: left;">強制終了</td>
-<td style="text-align: left;">task.exit()</td>
+<td style="text-align: left;">task.exit(), task.message()</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">エラー制御</td>
-<td style="text-align: left;">task.message(), task.done(err)</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">待機数を拡張</td>
 <td style="text-align: left;">task.extend()</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">pass or miss</td>
+<td style="text-align: left;">task.done(err)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Arrayを変換</td>
@@ -358,12 +358,12 @@ task.exit(); // 強制終了 -&gt; callback(new Error(...))</code></pre>
 
 </section>
 </section>
-<section id="task.done-task.message" class="level1">
-<h1>task.done(), task.message()</h1>
-<section id="error-handling" class="level2">
-<h2>Error Handling</h2>
+<section id="task.message" class="level1">
+<h1>task.message()</h1>
 <pre class="js"><code>var task = new Task(1, function(err) {
-    if (err) { console.log(err.message); } // -&gt; &quot;O_o&quot;
+    if (err) {
+        console.log(err.message); // -&gt; &quot;O_o&quot;
+    }
 });
 
 function userTask(task) {
@@ -374,49 +374,15 @@ function userTask(task) {
         task.message(err.message).miss(); // task.message(&quot;O_o&quot;) を設定
     }
 }
+
 userTask(task);</code></pre>
+<section id="section-12" class="level2">
+<h2></h2>
 <ul>
 <li>エラーハンドリングはユーザタスク側で行ってください</li>
 <li>問題が発生したら <strong>task.miss()</strong> を呼んでください</li>
 <li><strong>task.message()</strong> を使うと、待機失敗時に callback に渡される Errorオブジェクトのメッセージを設定できます</li>
 </ul>
-</section>
-<section id="section-12" class="level2">
-<h2></h2>
-<ul>
-<li><strong>task.done</strong> に Error オブジェクトを渡すと <strong>task.message(err.message).miss()</strong> として動作します</li>
-<li>引数を指定しないか、Error オブジェクト以外なら <strong>task.pass()</strong> として動作します</li>
-<li>task.done を使うと Error オブジェクトの有無で <strong>task.pass()</strong> または <strong>task.miss()</strong> を呼び分けている処理をシンプルに記述できます</li>
-</ul>
-<pre class="js"><code>// このようなありがちなコードが
-
-if (err) { // Error Object
-    task.message(err.message).miss();
-} else {
-    task.pass();
-}</code></pre>
-<pre class="js"><code>// こうなります
-
-task.done(err);</code></pre>
-</section>
-<section id="section-13" class="level2">
-<h2></h2>
-<p>task.done() を使うと、先ほどのコードも</p>
-<pre class="js"><code>
-    try {
-        throw new Error(&quot;O_o&quot;); // 例外発生!
-        task.pass(); // ここには到達しない
-    } catch (err) {
-        task.message(err.message).miss(); // task.message(&quot;O_o&quot;) を設定
-    }</code></pre>
-<p>こう書けます</p>
-<pre class="js"><code>
-    try {
-        throw new Error(&quot;O_o&quot;); // 例外発生!
-        task.pass(); // ここには到達しない
-    } catch (err) {
-        task.done(err);
-    }</code></pre>
 <!-- ----------------------------------------------------- -->
 
 </section>
@@ -440,6 +406,41 @@ task.pass();    // ユーザタスク成功(userTaskCountは2なので待機成�
 </figure>
 <!-- ----------------------------------------------------- -->
 
+</section>
+<section id="task.done" class="level1">
+<h1>task.done()</h1>
+<section id="section-13" class="level2">
+<h2></h2>
+<ul>
+<li>task.done を使うと Error オブジェクトの有無で <strong>task.pass()</strong> または <strong>task.miss()</strong> を呼び分けている処理をスッキリと記述できます</li>
+</ul>
+<pre class="js"><code>// このようなありがちなコードが
+
+if (err) { // Error Object
+    task.message(err.message).miss();
+} else {
+    task.pass();
+}</code></pre>
+<pre class="js"><code>// 一行で書けます
+
+task.done(err);</code></pre>
+</section>
+<section id="section-14" class="level2">
+<h2></h2>
+<pre class="js"><code>function callback(err, buffer) {
+    alert(err.message); // エラーメッセージ
+}
+
+var task = new Task(1, callback);
+
+task.done(new Error(&quot;エラーメッセージ&quot;));</code></pre>
+<ul>
+<li><strong>task.done</strong> に Error オブジェクトを渡すと <strong>task.message(err.message).miss()</strong> として動作します</li>
+<li>task.done の引数を指定しないか<br /> falsy な値(null, 0, undefined, &quot;&quot;) を渡すと <strong>task.pass()</strong> として動作します</li>
+</ul>
+<!-- ----------------------------------------------------- -->
+
+</section>
 </section>
 <section id="array-utilities" class="level1">
 <h1>Array Utilities</h1>
@@ -486,62 +487,10 @@ Task.objectize(array); // -&gt; { 0: 1, 1: 2, 2: 3, key: &quot;value&quot; }</co
 </section>
 <section id="junction" class="level1">
 <h1>Junction</h1>
-<section id="section-14" class="level2">
-<h2></h2>
-<pre class="js"><code>function callback(err) { }
-
-var junction = new Task(2, callback);
-
-var task1 = new Task(1, junction);
-var task2 = new Task(1, junction);</code></pre>
-<figure>
-<img src="./assets/img/junction.png" />
-</figure>
-<ul>
-<li>他の Task を集約する Task を <strong>Junction(合流点)</strong> と呼びます</li>
-<li>Junction を使うと Task の上下関係を記述できます</li>
-</ul>
-</section>
 <section id="section-15" class="level2">
 <h2></h2>
-<pre class="js"><code>function callback(err) {
-    console.log(&quot;finished&quot;);
-}
-
-lv1_junction     = new Task(1, callback);
-  lv2_junction   = new Task(1, lv1_junction);
-    lv3_junction = new Task(1, lv2_junction);
-      lv4_task1  = new Task(1, lv3_junction);
-      lv4_task2  = new Task(1, lv3_junction);
-
-lv4_task1.pass();
-lv4_task2.pass();</code></pre>
-<ul>
-<li>Junction を重ねる事で、Task の階層構造(<span style="color:gold">Task Tree</span>)を作る事ができます</li>
-<li>Junction を設定した Task で <strong>状態が変化</strong> すると 上位の Junction にも <strong>通知</strong> されます</li>
-<li>さらに上位の Junction がある場合は <strong>次々に伝播</strong> (バブルアップ)します</li>
-</ul>
-</section>
-<section id="section-16" class="level2">
-<h2></h2>
-<pre class="js"><code>function callback(err) {
-    console.log(&quot;finished&quot;);
-}
-
-lv1_junction     = new Task(1, callback);
-  lv2_junction   = new Task(1, lv1_junction);
-    lv3_junction = new Task(1, lv2_junction);
-      lv4_task1  = new Task(1, lv3_junction);
-      lv4_task2  = new Task(1, lv3_junction);
-
-lv4_task1.pass();
-lv4_task2.pass();</code></pre>
-<figure>
-<img src="./assets/img/nested.junction.png" />
-</figure>
-</section>
-<section id="section-17" class="level2">
-<h2></h2>
+<div style="background: url(./assets/img/junction.png) right top no-repeat">
+<div style="max-width: 600px; min-height:220px">
 <pre class="js"><code>function callback(err) {
     console.log(&quot;finished&quot;);
 }
@@ -551,12 +500,61 @@ var junction = new Task(2, callback);
 var task1 = new Task(1, junction);
 var task2 = new Task(1, junction);
 
-task1.pass(); // task1 の待機終了 → 状態変化が junction に通知される
-task2.pass(); // task2 の待機終了 → 状態変化が junction にも通知され junction も待機終了</code></pre>
+task1.pass(); // →junction にも状態変化が通知される
+task2.pass(); // →junction にも状態変化が通知される
+              // →junction の待機も終了する</code></pre>
+</div>
+</div>
+<ul>
+<li>他の Task を集約する Task を <strong>Junction(合流点)</strong> と呼びます</li>
+<li>Junction を重ねる事で Task の階層構造( <strong>Task Tree</strong> )を作る事ができます</li>
+<li>Junction に接続されている Task で <strong>状態変化</strong> が起きると 上位の Junction にも <strong>通知</strong> されます。 さらに上位の Junction がある場合は <strong>次々に伝播</strong> (バブルアップ)します</li>
+</ul>
+</section>
+<section id="section-16" class="level2">
+<h2></h2>
+<div style="background: url(./assets/img/junction.png) right top no-repeat">
+<div style="max-width: 600px; min-height:220px">
+<pre class="js"><code>function callback(err) {
+    console.log(&quot;finished&quot;);
+}
+
+var junction = new Task(2, callback);
+
+var task1 = new Task(1, junction);
+var task2 = new Task(1, junction);
+
+task1.pass(); // →junction にも状態変化が通知される
+task2.pass(); // →junction にも状態変化が通知される
+              // →junction の待機も終了する</code></pre>
+</div>
+</div>
 <ul>
 <li>task1.pass() で task1 と junction の状態が変化します</li>
 <li>task2.pass() で task2 と junction の状態が変化します</li>
 <li>task2.pass() のタイミングで junction の待機も終了し、callback が呼ばれます</li>
+</ul>
+</section>
+<section id="section-17" class="level2">
+<h2></h2>
+<div style="background: url(./assets/img/nested.junction.png) right top no-repeat">
+<div style="max-width: 525px; min-height:320px">
+<pre class="js"><code>function callback(err) {
+    console.log(&quot;finished&quot;);
+}
+
+lv1_junction     = new Task(1, callback);
+  lv2_junction   = new Task(1, lv1_junction);
+    lv3_junction = new Task(2, lv2_junction);
+      lv4_task1  = new Task(1, lv3_junction);
+      lv4_task2  = new Task(1, lv3_junction);
+
+lv4_task1.pass();
+lv4_task2.pass();</code></pre>
+</div>
+</div>
+<ul>
+<li>Junction を使うと Task の階層構造をコンパクトに記述できます</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -719,6 +717,10 @@ Task.run(&quot;task_a &gt; task_b + task_c &gt; task_d&quot;, {
 <pre class="js"><code>Task.run(&quot;task_a + task_b + task_c&quot;, {
     unknown_task_name: function(task) {},
     bad_argument: function(/* task */) {}
+}, function() {});
+Task.run(&quot;task_a + task_b + task_c&quot;, {
+    unknown_task_name: function(task) {},
+    bad_argument: function(/* task */) {}
 }, function() {});</code></pre>
 <pre class="js"><code>&gt; TypeError: Task.run(taskRoute, taskMap)</code></pre>
 <ul>
@@ -875,8 +877,8 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</co
 <!-- ----------------------------------------------------- -->
 </section>
 </section>
-<section id="install-and-import-script" class="level1">
-<h1>install and import script</h1>
+<section id="try-it" class="level1">
+<h1>Try it</h1>
 <section id="github" class="level2">
 <h2>github</h2>
 <pre class="sh"><code>https://github.com/uupaa/Task.js</code></pre>
@@ -884,16 +886,6 @@ waitForAsyncProcesses(function(err) { console.log(&quot;finished&quot;); });</co
 <section id="npm-install" class="level2">
 <h2>npm install</h2>
 <pre class="sh"><code>$ npm install uupaa.task.js</code></pre>
-<!--
-- モジュール名が **uupaa.** で始まっている理由について
-    - npm モジュール名は先願制で、一般名詞や動詞は既に枯渇しています
-    - npm モジュール名には、大文字を利用できません
-    - このような理由により、致し方なく…
-    - uupaa がお供するとお考え下さい
-
-(ε・◇・)з o O ( お伴するよ〜
- -->
-
 </section>
 <section id="in-node.js" class="level2">
 <h2>in Node.js</h2>
@@ -926,6 +918,14 @@ var task = new Task(1, function(err) {
     });
 
 task.pass();</code></pre>
+</section>
+<section id="in-this-slide" class="level2">
+<h2>in this slide</h2>
+<p>Open browser console, and try this code.</p>
+<pre class="js"><code>new Task(1, function() { console.log(&quot;Hello Task&quot;); }).pass();</code></pre>
+<figure>
+<img src="./assets/img/try.png" />
+</figure>
 <!-- ----------------------------------------------------- -->
 
 </section>

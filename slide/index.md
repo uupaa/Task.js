@@ -147,9 +147,9 @@ Task.js の基本はこれだけです
 | 失敗を許容       | task.missable() |
 | バッファ         | callback(buffer), task.buffer() |
 | デバッグ         | Task.dump(), Task.drop() |
-| 強制終了         | task.exit() |
-| エラー制御       | task.message(), task.done(err) |
+| 強制終了         | task.exit(), task.message() |
 | 待機数を拡張     | task.extend()   |
+| pass or miss     | task.done(err)  |
 | Arrayを変換      | Task.flatten(), Task.arraynize(), Task.objectize() |
 | Taskを連結       | Junction, Task.run() |
 
@@ -286,12 +286,13 @@ task.exit(); // 強制終了 -> callback(new Error(...))
 
 <!-- ----------------------------------------------------- -->
 
-# task.done(), task.message()
+# task.message()
 
-## Error Handling
 ```js
 var task = new Task(1, function(err) {
-    if (err) { console.log(err.message); } // -> "O_o"
+    if (err) {
+        console.log(err.message); // -> "O_o"
+    }
 });
 
 function userTask(task) {
@@ -302,58 +303,15 @@ function userTask(task) {
         task.message(err.message).miss(); // task.message("O_o") を設定
     }
 }
+
 userTask(task);
-```
-
-- エラーハンドリングはユーザタスク側で行ってください
-- 問題が発生したら **task.miss()** を呼んでください
-- **task.message()** を使うと、待機失敗時に callback に渡される Errorオブジェクトのメッセージを設定できます
-
-##
-
-- **task.done** に Error オブジェクトを渡すと **task.message(err.message).miss()** として動作します
-- 引数を指定しないか、Error オブジェクト以外なら **task.pass()** として動作します
-- task.done を使うと Error オブジェクトの有無で **task.pass()** または **task.miss()** を呼び分けている処理をシンプルに記述できます
-
-```js
-// このようなありがちなコードが
-
-if (err) { // Error Object
-    task.message(err.message).miss();
-} else {
-    task.pass();
-}
-```
-
-```js
-// こうなります
-
-task.done(err);
 ```
 
 ## 
 
-task.done() を使うと、先ほどのコードも
-```js
-
-    try {
-        throw new Error("O_o"); // 例外発生!
-        task.pass(); // ここには到達しない
-    } catch (err) {
-        task.message(err.message).miss(); // task.message("O_o") を設定
-    }
-```
-
-こう書けます
-```js
-
-    try {
-        throw new Error("O_o"); // 例外発生!
-        task.pass(); // ここには到達しない
-    } catch (err) {
-        task.done(err);
-    }
-```
+- エラーハンドリングはユーザタスク側で行ってください
+- 問題が発生したら **task.miss()** を呼んでください
+- **task.message()** を使うと、待機失敗時に callback に渡される Errorオブジェクトのメッセージを設定できます
 
 
 <!-- ----------------------------------------------------- -->
@@ -375,6 +333,50 @@ task.pass();    // ユーザタスク成功(userTaskCountは2なので待機成�
 - 次々にユーザタスクが増えるケースで使います
 
 ![](./assets/img/task.extend.png)
+
+
+<!-- ----------------------------------------------------- -->
+
+# task.done()
+
+## 
+
+- task.done を使うと Error オブジェクトの有無で **task.pass()** または **task.miss()** を呼び分けている処理をスッキリと記述できます
+
+```js
+// このようなありがちなコードが
+
+if (err) { // Error Object
+    task.message(err.message).miss();
+} else {
+    task.pass();
+}
+```
+
+```js
+// 一行で書けます
+
+task.done(err);
+```
+
+
+## 
+
+```js
+function callback(err, buffer) {
+    alert(err.message); // エラーメッセージ
+}
+
+var task = new Task(1, callback);
+
+task.done(new Error("エラーメッセージ"));
+```
+
+- **task.done** に Error オブジェクトを渡すと **task.message(err.message).miss()** として動作します
+- task.done の引数を指定しないか  
+  falsy な値(null, 0, undefined, "") を渡すと **task.pass()** として動作します
+
+
 
 
 <!-- ----------------------------------------------------- -->
@@ -431,62 +433,34 @@ Task.objectize(array); // -> { 0: 1, 1: 2, 2: 3, key: "value" }
 
 ## 
 
+<div style="background: url(./assets/img/junction.png) right top no-repeat">
+<div style="max-width: 600px; min-height:220px">
 ```js
-function callback(err) { }
+function callback(err) {
+    console.log("finished");
+}
 
 var junction = new Task(2, callback);
 
 var task1 = new Task(1, junction);
 var task2 = new Task(1, junction);
-```
 
-![](./assets/img/junction.png)
+task1.pass(); // →junction にも状態変化が通知される
+task2.pass(); // →junction にも状態変化が通知される
+              // →junction の待機も終了する
+```
+</div>
+</div>
 
 - 他の Task を集約する Task を **Junction(合流点)** と呼びます
-- Junction を使うと Task の上下関係を記述できます
+- Junction を重ねる事で Task の階層構造( **Task Tree** )を作る事ができます
+- Junction に接続されている Task で **状態変化** が起きると 上位の Junction にも **通知** されます。
+  さらに上位の Junction がある場合は **次々に伝播** (バブルアップ)します
 
 ## 
 
-```js
-function callback(err) {
-    console.log("finished");
-}
-
-lv1_junction     = new Task(1, callback);
-  lv2_junction   = new Task(1, lv1_junction);
-    lv3_junction = new Task(1, lv2_junction);
-      lv4_task1  = new Task(1, lv3_junction);
-      lv4_task2  = new Task(1, lv3_junction);
-
-lv4_task1.pass();
-lv4_task2.pass();
-```
-
-- Junction を重ねる事で、Task の階層構造(<span style="color:gold">Task Tree</span>)を作る事ができます
-- Junction を設定した Task で **状態が変化** すると 上位の Junction にも **通知** されます
-- さらに上位の Junction がある場合は **次々に伝播** (バブルアップ)します
-
-## 
-
-```js
-function callback(err) {
-    console.log("finished");
-}
-
-lv1_junction     = new Task(1, callback);
-  lv2_junction   = new Task(1, lv1_junction);
-    lv3_junction = new Task(1, lv2_junction);
-      lv4_task1  = new Task(1, lv3_junction);
-      lv4_task2  = new Task(1, lv3_junction);
-
-lv4_task1.pass();
-lv4_task2.pass();
-```
-
-![](./assets/img/nested.junction.png)
-
-## 
-
+<div style="background: url(./assets/img/junction.png) right top no-repeat">
+<div style="max-width: 600px; min-height:220px">
 ```js
 function callback(err) {
     console.log("finished");
@@ -497,13 +471,41 @@ var junction = new Task(2, callback);
 var task1 = new Task(1, junction);
 var task2 = new Task(1, junction);
 
-task1.pass(); // task1 の待機終了 → 状態変化が junction に通知される
-task2.pass(); // task2 の待機終了 → 状態変化が junction にも通知され junction も待機終了
+task1.pass(); // →junction にも状態変化が通知される
+task2.pass(); // →junction にも状態変化が通知される
+              // →junction の待機も終了する
 ```
+</div>
+</div>
 
 - task1.pass() で task1 と junction の状態が変化します
 - task2.pass() で task2 と junction の状態が変化します
 - task2.pass() のタイミングで junction の待機も終了し、callback が呼ばれます
+
+## 
+
+<div style="background: url(./assets/img/nested.junction.png) right top no-repeat">
+<div style="max-width: 525px; min-height:320px">
+```js
+function callback(err) {
+    console.log("finished");
+}
+
+lv1_junction     = new Task(1, callback);
+  lv2_junction   = new Task(1, lv1_junction);
+    lv3_junction = new Task(2, lv2_junction);
+      lv4_task1  = new Task(1, lv3_junction);
+      lv4_task2  = new Task(1, lv3_junction);
+
+lv4_task1.pass();
+lv4_task2.pass();
+```
+</div>
+</div>
+
+- Junction を使うと Task の階層構造をコンパクトに記述できます
+
+
 
 <!-- ----------------------------------------------------- -->
 
@@ -683,6 +685,10 @@ Task.run("task_a + task_b + task_c", {
     unknown_task_name: function(task) {},
     bad_argument: function(/* task */) {}
 }, function() {});
+Task.run("task_a + task_b + task_c", {
+    unknown_task_name: function(task) {},
+    bad_argument: function(/* task */) {}
+}, function() {});
 ```
 
 ```js
@@ -855,7 +861,7 @@ waitForAsyncProcesses(function(err) { console.log("finished"); });
 (ε・◇・)з o O ( **スッキリ**
 
 <!-- ----------------------------------------------------- -->
-# install and import script
+# Try it
 
 ## github
 
@@ -867,16 +873,6 @@ https://github.com/uupaa/Task.js
 ```sh
 $ npm install uupaa.task.js
 ```
-
-<!--
-- モジュール名が **uupaa.** で始まっている理由について
-    - npm モジュール名は先願制で、一般名詞や動詞は既に枯渇しています
-    - npm モジュール名には、大文字を利用できません
-    - このような理由により、致し方なく…
-    - uupaa がお供するとお考え下さい
-
-(ε・◇・)з o O ( お伴するよ〜
- -->
 
 ## in Node.js
 ```js
@@ -914,6 +910,15 @@ var task = new Task(1, function(err) {
 
 task.pass();
 ```
+
+## in this slide
+
+Open browser console, and try this code.
+```js
+new Task(1, function() { console.log("Hello Task"); }).pass();
+```
+
+![](./assets/img/try.png)
 
 <!-- ----------------------------------------------------- -->
 
