@@ -139,23 +139,20 @@
 </section>
 <section id="task.js-の基本" class="level1">
 <h1>Task.js の基本</h1>
-<pre class="js"><code>function callback(err) {
-    if (err) {
-        console.log(&quot;エラーが発生しました: &quot; + err.message);
-    }
-}
-function userTask1() { task.pass(); } // ユーザタスク終了で task.pass() を呼ぶ
-function userTask2() { task.miss(); } // ユーザタスク失敗で task.miss() を呼ぶ
+<pre class="js"><code>function executeUserTask() { return true; }
+function callback(err) { console.log(&quot;finished&quot;); }
 
-var userTaskCount = 2;
-var task = new Task(userTaskCount, callback);
+var task = new Task(2, callback);
 
-userTask1();                 // 同期ユーザタスク: すぐに userTask1 を呼ぶ
-setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってから userTask1 を呼ぶ</code></pre>
+executeUserTask() ? task.pass() : task.miss(); // sync
+
+setTimeout(function() { // async
+    executeUserTask() ? task.pass() : task.miss();
+}, 1000);</code></pre>
 <section id="section-5" class="level2">
 <h2></h2>
 <ul>
-<li>Task.js では、ユーザが用意する同期/非同期処理を<br /> <strong>ユーザータスク</strong> と呼びます</li>
+<li>Task.js では、ユーザの同期/非同期処理を<br /> <strong>ユーザータスク</strong> と呼びます</li>
 <li>var task = new Task( <strong>2</strong>, <strong>callback</strong> ) は、<strong>task.pass()</strong> が2回呼ばれるのを <strong>待ちます</strong></li>
 </ul>
 </section>
@@ -170,8 +167,8 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 <section id="まとめ" class="level2">
 <h2>まとめ</h2>
 <ol type="1">
-<li><strong>new Task</strong>( <strong>待機するユーザタスク数</strong> , <strong>callback</strong> ) で待機開始</li>
-<li>ユーザタスク成功で <strong>task.pass()</strong> を、失敗で <strong>task.miss()</strong> を呼ぶ</li>
+<li><strong>new Task</strong>( <strong>ユーザタスクの数</strong> , <strong>callback</strong> ) で待機開始</li>
+<li>ユーザタスク成功で <strong>task.pass()</strong> を、<br /> 失敗で <strong>task.miss()</strong> を呼ぶ</li>
 <li>待機終了で <strong>callback</strong> が呼ばれる</li>
 </ol>
 </section>
@@ -180,53 +177,53 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 <p>Task.js の基本はこれだけです</p>
 <hr />
 
-<p>では次に 応用編です</p>
+<p>次のページからは応用です<br />Task.js の便利な機能を紹介していきます</p>
 <!-- ----------------------------------------------------- -->
 
 </section>
 </section>
-<section id="task-の応用" class="level1">
-<h1>Task の応用</h1>
+<section id="task.js-を便利に使う" class="level1">
+<h1>Task.js を便利に使う</h1>
 <section id="section-8" class="level2">
 <h2></h2>
 <table>
 <thead>
 <tr class="header">
-<th style="text-align: left;">用法</th>
-<th style="text-align: left;">API</th>
+<th style="text-align: left;">使い方</th>
+<th style="text-align: left;">該当するAPI</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">失敗を許容</td>
+<td style="text-align: left;">失敗を許す</td>
 <td style="text-align: left;">task.missable()</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">バッファ</td>
-<td style="text-align: left;">callback(buffer), task.buffer()</td>
+<td style="text-align: left;">データを溜める,<br />取り出す</td>
+<td style="text-align: left;">task.buffer(), callback(buffer), <br />Task.flatten(), Task.arraynize(), Task.objectize()</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">デバッグ</td>
+<td style="text-align: left;">デバッグする</td>
 <td style="text-align: left;">Task.dump(), Task.drop()</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">強制終了</td>
-<td style="text-align: left;">task.exit(), task.message()</td>
+<td style="text-align: left;">強制終了する</td>
+<td style="text-align: left;">task.exit()</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">待機数を拡張</td>
+<td style="text-align: left;">エラー</td>
+<td style="text-align: left;">task.message(), task.done()</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">もっと待つ</td>
 <td style="text-align: left;">task.extend()</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;">pass or miss</td>
+<tr class="odd">
+<td style="text-align: left;">短く書く</td>
 <td style="text-align: left;">task.done(err)</td>
 </tr>
-<tr class="odd">
-<td style="text-align: left;">Arrayを変換</td>
-<td style="text-align: left;">Task.flatten(), Task.arraynize(), Task.objectize()</td>
-</tr>
 <tr class="even">
-<td style="text-align: left;">Taskを連結</td>
+<td style="text-align: left;">Taskを連結する</td>
 <td style="text-align: left;">Junction, Task.run()</td>
 </tr>
 </tbody>
@@ -237,21 +234,46 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 </section>
 <section id="task.missable" class="level1">
 <h1>task.missable()</h1>
-<pre class="js"><code>function callback(err) { }
+<section id="section-9" class="level2">
+<h2></h2>
+<pre class="js"><code>function callback(err) { console.log(err.message); }
 
-var task = new Task(3, callback);
+var task = new Task(1, callback, { name: &quot;MissableTask&quot; });
 
 task.missable(2);
 task.miss(); // ユーザタスク失敗(missableが2なので許容する)
 task.miss(); // ユーザタスク失敗(missableが2なので許容する)
 task.miss(); // ユーザタスク失敗(missableが2なので待機失敗) -&gt; callback(Error)</code></pre>
-<section id="section-9" class="level2">
-<h2></h2>
 <ul>
-<li>ユーザタスクが3つあり、そのうち2回まで失敗を許容する場合は、new Task(3).<span style="color:gold">missable(2)</span> とします</li>
+<li>成功しなければならないユーザタスクが1つあり、<br /> 2回までの試行を許可する(失敗を許容する)場合は、<br /> new Task(1). <strong>missable(2)</strong> とします</li>
 <li><strong>task.missable(n)</strong> で失敗を許容する回数を設定できます</li>
 <li>task.missable(0) の状態で <strong>task.miss()</strong> を一度でも呼ぶと待機失敗で終了します</li>
 <li>初期状態は task.missble(0) です</li>
+</ul>
+</section>
+<section id="section-10" class="level2">
+<h2></h2>
+<pre class="js"><code>function callback(err) { console.log(err.message); }
+var task = new Task(1, callback).missable(1);
+
+download([&quot;http://cdn1.example.com/image.png&quot;,
+          &quot;http://cdn2.example.com/image.png&quot;], task);
+
+function download(urls, task) {
+    var xhr = new XMLHttpRequest();
+
+    xhr.onload = function() { task.pass(); };
+    xhr.onerror = function() {
+        if ( !task.miss().isFinished() ) {
+            download(urls, task);
+        }
+    };
+    xhr.open(&quot;GET&quot;, urls.shift(), true);
+    xhr.send()
+}</code></pre>
+<ul>
+<li>task.missable を使うと、<br /> 失敗するかもしれない処理を簡単に記述できます</li>
+<li>上記の例では、CDN1 からダウンロードできない場合に CDN2 を利用してリカバリを試みます</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -330,7 +352,7 @@ Task.dump(&quot;TEST&quot;);
 <li>Task の第三引数で Task 名を指定し、<strong>Task.dump(taskName)</strong> で絞り込めます</li>
 </ul>
 </section>
-<section id="section-10" class="level2">
+<section id="section-11" class="level2">
 <h2></h2>
 <pre class="js"><code>Task.drop();</code></pre>
 <ul>
@@ -349,7 +371,7 @@ Task.dump(&quot;TEST&quot;);
 var task = new Task(100, callback).missable(100);
 
 task.exit(); // 強制終了 -&gt; callback(new Error(...))</code></pre>
-<section id="section-11" class="level2">
+<section id="section-12" class="level2">
 <h2></h2>
 <ul>
 <li><strong>task.exit()</strong> を使うと、 userTaskCount や missable の状態に関わらず、待機失敗で強制終了します</li>
@@ -376,7 +398,7 @@ function userTask(task) {
 }
 
 userTask(task);</code></pre>
-<section id="section-12" class="level2">
+<section id="section-13" class="level2">
 <h2></h2>
 <ul>
 <li>エラーハンドリングはユーザタスク側で行ってください</li>
@@ -409,7 +431,7 @@ task.pass();    // ユーザタスク成功(userTaskCountは2なので待機成�
 </section>
 <section id="task.done" class="level1">
 <h1>task.done()</h1>
-<section id="section-13" class="level2">
+<section id="section-14" class="level2">
 <h2></h2>
 <ul>
 <li>task.done を使うと Error オブジェクトの有無で <strong>task.pass()</strong> または <strong>task.miss()</strong> を呼び分けている処理をスッキリと記述できます</li>
@@ -425,7 +447,7 @@ if (err) { // Error Object
 
 task.done(err);</code></pre>
 </section>
-<section id="section-14" class="level2">
+<section id="section-15" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err, buffer) {
     alert(err.message); // エラーメッセージ
@@ -487,7 +509,7 @@ Task.objectize(array); // -&gt; { 0: 1, 1: 2, 2: 3, key: &quot;value&quot; }</co
 </section>
 <section id="junction" class="level1">
 <h1>Junction</h1>
-<section id="section-15" class="level2">
+<section id="section-16" class="level2">
 <h2></h2>
 <div style="background: url(./assets/img/junction.png) right top no-repeat">
 <div style="max-width: 600px; min-height:220px">
@@ -511,7 +533,7 @@ task2.pass(); // →junction にも状態変化が通知される
 <li>Junction に接続されている Task で <strong>状態変化</strong> が起きると 上位の Junction にも <strong>通知</strong> されます。 さらに上位の Junction がある場合は <strong>次々に伝播</strong> (バブルアップ)します</li>
 </ul>
 </section>
-<section id="section-16" class="level2">
+<section id="section-17" class="level2">
 <h2></h2>
 <div style="background: url(./assets/img/junction.png) right top no-repeat">
 <div style="max-width: 600px; min-height:220px">
@@ -535,7 +557,7 @@ task2.pass(); // →junction にも状態変化が通知される
 <li>task2.pass() のタイミングで junction の待機も終了し、callback が呼ばれます</li>
 </ul>
 </section>
-<section id="section-17" class="level2">
+<section id="section-18" class="level2">
 <h2></h2>
 <div style="background: url(./assets/img/nested.junction.png) right top no-repeat">
 <div style="max-width: 525px; min-height:320px">
@@ -580,7 +602,7 @@ Task.run(&quot;c + d&quot;, taskMap, junction); // c と d を並列実行</code
 <li>Task の上下関係を定義する <strong>Junction</strong> と Task.run は組み合わせて利用できます</li>
 </ul>
 </section>
-<section id="section-18" class="level2">
+<section id="section-19" class="level2">
 <h2></h2>
 <pre class="js"><code>function callback(err, buffer) {
 }
@@ -739,7 +761,7 @@ Task.run(&quot;task_a + task_b + task_c&quot;, {
 </section>
 <section id="javascript-vs-promise-vs-task.js" class="level1">
 <h1>JavaScript vs Promise vs Task.js</h1>
-<section id="section-19" class="level2">
+<section id="section-20" class="level2">
 <h2></h2>
 <p>「非同期のユーザタスク <strong>A, B, C, D</strong> を、<br /><strong>A, B のグループ</strong> と <strong>C, D のグループ</strong> に分け、<br /><strong>2つのグループの完了を待つ</strong>」処理を、<br />それぞれの方法で実装してみます</p>
 <ul>
@@ -932,7 +954,7 @@ task.pass();</code></pre>
 </section>
 <section id="まとめ-1" class="level1">
 <h1>まとめ</h1>
-<section id="section-20" class="level2">
+<section id="section-21" class="level2">
 <h2></h2>
 <p>Task.js は以下の特徴を備えています</p>
 <ul>
@@ -943,7 +965,7 @@ task.pass();</code></pre>
 <li>Junction と Task.run を組み合わせて <strong>スッキリ</strong> としたコードが書けます</li>
 </ul>
 </section>
-<section id="section-21" class="level2">
+<section id="section-22" class="level2">
 <h2></h2>
 <p>(ε・◇・)з o O ( Task.js マジ オススメ</p>
 </section>

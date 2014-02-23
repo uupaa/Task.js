@@ -94,24 +94,21 @@ Task.js はこれら全ての
 # Task.js の基本
 
 ```js
-function callback(err) {
-    if (err) {
-        console.log("エラーが発生しました: " + err.message);
-    }
-}
-function userTask1() { task.pass(); } // ユーザタスク終了で task.pass() を呼ぶ
-function userTask2() { task.miss(); } // ユーザタスク失敗で task.miss() を呼ぶ
+function executeUserTask() { return true; }
+function callback(err) { console.log("finished"); }
 
-var userTaskCount = 2;
-var task = new Task(userTaskCount, callback);
+var task = new Task(2, callback);
 
-userTask1();                 // 同期ユーザタスク: すぐに userTask1 を呼ぶ
-setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってから userTask1 を呼ぶ
+executeUserTask() ? task.pass() : task.miss(); // sync
+
+setTimeout(function() { // async
+    executeUserTask() ? task.pass() : task.miss();
+}, 1000);
 ```
 
 ## 
 
-- Task.js では、ユーザが用意する同期/非同期処理を  
+- Task.js では、ユーザの同期/非同期処理を  
   **ユーザータスク** と呼びます
 - var task = new Task( **2**, **callback** ) は、**task.pass()** が2回呼ばれるのを **待ちます**
 
@@ -124,8 +121,9 @@ setTimeout(userTask1, 1000); // 非同期ユーザタスク: 1000ms待ってか�
 
 ## まとめ
 
-1. **new Task**( **待機するユーザタスク数** , **callback** ) で待機開始
-2. ユーザタスク成功で **task.pass()** を、失敗で **task.miss()** を呼ぶ
+1. **new Task**( **ユーザタスクの数** , **callback** ) で待機開始
+2. ユーザタスク成功で **task.pass()** を、  
+   失敗で **task.miss()** を呼ぶ
 3. 待機終了で **callback** が呼ばれる
 
 ## 
@@ -134,33 +132,36 @@ Task.js の基本はこれだけです
 
 <hr />
 
-では次に 応用編です
+次のページからは応用です  
+Task.js の便利な機能を紹介していきます
 
 <!-- ----------------------------------------------------- -->
 
-# Task の応用
+# Task.js を便利に使う
 
 ## 
 
-| 用法             | API             |
+| 使い方           | 該当するAPI     |
 |------------------|-----------------|
-| 失敗を許容       | task.missable() |
-| バッファ         | callback(buffer), task.buffer() |
-| デバッグ         | Task.dump(), Task.drop() |
-| 強制終了         | task.exit(), task.message() |
-| 待機数を拡張     | task.extend()   |
-| pass or miss     | task.done(err)  |
-| Arrayを変換      | Task.flatten(), Task.arraynize(), Task.objectize() |
-| Taskを連結       | Junction, Task.run() |
+| 失敗を許す       | task.missable() |
+| データを溜める,<br />取り出す   | task.buffer(), callback(buffer), <br />Task.flatten(), Task.arraynize(), Task.objectize() |
+| デバッグする     | Task.dump(), Task.drop() |
+| 強制終了する     | task.exit() |
+| エラー           | task.message(), task.done() |
+| もっと待つ       | task.extend()   |
+| 短く書く         | task.done(err)  |
+| Taskを連結する   | Junction, Task.run() |
 
 <!-- ----------------------------------------------------- -->
 
 # task.missable()
 
-```js
-function callback(err) { }
+##
 
-var task = new Task(3, callback);
+```js
+function callback(err) { console.log(err.message); }
+
+var task = new Task(1, callback, { name: "MissableTask" });
 
 task.missable(2);
 task.miss(); // ユーザタスク失敗(missableが2なので許容する)
@@ -168,12 +169,40 @@ task.miss(); // ユーザタスク失敗(missableが2なので許容する)
 task.miss(); // ユーザタスク失敗(missableが2なので待機失敗) -> callback(Error)
 ```
 
-##
-
-- ユーザタスクが3つあり、そのうち2回まで失敗を許容する場合は、new Task(3).<span style="color:gold">missable(2)</span> とします
+- 成功しなければならないユーザタスクが1つあり、  
+  2回までの試行を許可する(失敗を許容する)場合は、  
+  new Task(1). **missable(2)** とします
 - **task.missable(n)** で失敗を許容する回数を設定できます
 - task.missable(0) の状態で **task.miss()** を一度でも呼ぶと待機失敗で終了します
 - 初期状態は task.missble(0) です
+
+##
+
+```js
+function callback(err) { console.log(err.message); }
+var task = new Task(1, callback).missable(1);
+
+download(["http://cdn1.example.com/image.png",
+          "http://cdn2.example.com/image.png"], task);
+
+function download(urls, task) {
+    var xhr = new XMLHttpRequest();
+
+    xhr.onload = function() { task.pass(); };
+    xhr.onerror = function() {
+        if ( !task.miss().isFinished() ) {
+            download(urls, task);
+        }
+    };
+    xhr.open("GET", urls.shift(), true);
+    xhr.send()
+}
+```
+
+- task.missable を使うと、  
+  失敗するかもしれない処理を簡単に記述できます
+- 上記の例では、CDN1 からダウンロードできない場合に CDN2 を利用してリカバリを試みます
+
 
 <!-- ----------------------------------------------------- -->
 

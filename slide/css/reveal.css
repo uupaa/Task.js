@@ -352,6 +352,7 @@ body {
 .reveal table td {
 	text-align: left;
 	padding-right: .3em;
+    white-space: nowrap;
 }
 
 .reveal table th {
