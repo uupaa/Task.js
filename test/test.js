@@ -34,16 +34,15 @@ var test = new Test().add([
         testMapWithoutRoute,
         testArg,
         testThrowTask,
-        // benchmark
-        test500TaskBench,
     ]);
 
-    if (this["Promise"]) {
-        test.add([
-                // benchmark
-                test500PromiseBench,
-            ]);
+    if (this["XMLHttpRequest"]) {
+        test.add([ testMissableRecover ]);
     }
+    if (this["Promise"]) {
+        test.add([ test500PromiseBench ]);
+    }
+    test.add([ test500TaskBench ]);
 
     test.run().worker(function(err, test) {
         if (!err) {
@@ -174,6 +173,47 @@ function testMissable(next) {
             next && next.miss();
         } else {
             console.log("testMissable ok");
+            next && next.pass();
+        }
+    }
+}
+
+function testMissableRecover(next) {
+    var task = new Task(1, callback, { name: "testMissableRecover" }).missable(2);
+
+    download(["http://cdn1.example.com/image.png",
+              "http://cdn2.example.com/image.png",
+              "ok"], task);
+
+    function download(urls, task) {
+        var xhr = new XMLHttpRequest();
+
+        xhr.onload = function() {
+            task.pass();
+        };
+        xhr.onerror = function() {
+            task.miss();
+            if ( !task.isFinished() ) {
+                download(urls, task);
+            }
+        };
+
+        // for test code
+        if (urls[0] === "ok") {
+            task.pass();
+            return;
+        }
+
+        xhr.open("GET", urls.shift(), true);
+        xhr.send()
+    }
+
+    function callback(err, buffer) {
+        if (err) {
+            console.error("testMissableRecover ng");
+            next && next.miss();
+        } else {
+            console.log("testMissableRecover ok");
             next && next.pass();
         }
     }
