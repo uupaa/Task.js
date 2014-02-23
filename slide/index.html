@@ -415,7 +415,7 @@ task.exit(); // 強制終了 -&gt; callback(new Error(...))</code></pre>
 <section id="section-12" class="level2">
 <h2></h2>
 <ul>
-<li><strong>task.exit()</strong> を使うと、 userTaskCount や missable の状態に関わらず、待機失敗で強制終了します</li>
+<li><strong>task.exit()</strong> を使うと、 ユーザのタスク数や missable の状態に関わらず、待機失敗で強制終了します</li>
 </ul>
 <!-- ----------------------------------------------------- -->
 
@@ -486,14 +486,15 @@ task.done(err);</code></pre>
 <h1>task.extend()</h1>
 <pre class="js"><code>function callback(err) { }
 
-var task = new Task(1, callback);
+var taskCount = 1;
+var task = new Task(taskCount, callback);
 
-task.extend(1); // userTaskCount += 1;
-task.pass();    // ユーザタスク成功(userTaskCountは2なので待機する)
-task.pass();    // ユーザタスク成功(userTaskCountは2なので待機成功で終了する)
+task.extend(1); // taskCount += 1;
+task.pass();    // ユーザタスク成功(taskCount は2なので待機する)
+task.pass();    // ユーザタスク成功(taskCount は2なので待機成功で終了する)
                 //      -&gt; callback(null)</code></pre>
 <ul>
-<li>動的に userTaskCount を +1 するには、<strong>task.extend(1)</strong> とします</li>
+<li>動的に taskCount を +1 するには、<strong>task.extend(1)</strong> とします</li>
 <li>次々にユーザタスクが増えるケースで使います</li>
 </ul>
 <figure>

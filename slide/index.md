@@ -357,7 +357,7 @@ task.exit(); // 強制終了 -> callback(new Error(...))
 ##
 
 - **task.exit()** を使うと、
-  userTaskCount や missable の状態に関わらず、待機失敗で強制終了します
+  ユーザのタスク数や missable の状態に関わらず、待機失敗で強制終了します
 
 <!-- ----------------------------------------------------- -->
 
@@ -439,15 +439,16 @@ task.done() を使うと、先ほどのコードも
 ```js
 function callback(err) { }
 
-var task = new Task(1, callback);
+var taskCount = 1;
+var task = new Task(taskCount, callback);
 
-task.extend(1); // userTaskCount += 1;
-task.pass();    // ユーザタスク成功(userTaskCountは2なので待機する)
-task.pass();    // ユーザタスク成功(userTaskCountは2なので待機成功で終了する)
+task.extend(1); // taskCount += 1;
+task.pass();    // ユーザタスク成功(taskCount は2なので待機する)
+task.pass();    // ユーザタスク成功(taskCount は2なので待機成功で終了する)
                 //      -> callback(null)
 ```
 
-- 動的に userTaskCount を +1 するには、**task.extend(1)** とします
+- 動的に taskCount を +1 するには、**task.extend(1)** とします
 - 次々にユーザタスクが増えるケースで使います
 
 ![](./assets/img/task.extend.png)
