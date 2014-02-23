@@ -249,7 +249,53 @@ task2.push("value2").pass();
 - task1.push("value1") は junction.push("value1") と **同じ結果** になり  
   task2.push("value2") も junction.push("value2") と同じ結果になります
 
+<!-- ----------------------------------------------------- -->
 
+# Buffer(Array) Utilities
+
+## Task.flatten()
+
+```js
+var array = [ [1,2], [3,4] ];
+
+Task.flatten(array); // -> [1, 2, 3, 4]
+```
+
+- **Task.flatten(array)**を使うと、ネストした2次元配列を1次元配列に展開できます
+- 2次元配列を含んだ Buffer の値を展開する時に便利です
+
+
+```js
+Task.flatten([ [1,2], [3,4], [ [5,6] ] ]); // -> [1, 2, 3, 4, [5, 6] ]
+```
+
+- 3次元配列は2次元配列になります
+
+## Task.arraynize()
+
+```js
+var array = [1,2,3];
+array["key"] = "value"; // Array にプロパティを追加
+
+Task.arraynize(array); // -> [1, 2, 3] になる
+```
+
+- **Task.arraynize(array)**は、新しい配列を作り array の値をコピーします
+- array のプロパティ("key", "value")は **コピーしません**
+- Buffer の値をクローンするために利用できます
+
+## Task.objectize()
+
+```js
+var array = [1,2,3];
+array["key"] = "value"; // Array にプロパティを追加
+
+Task.objectize(array); // -> { 0: 1, 1: 2, 2: 3, key: "value" }
+```
+
+- **Task.objectize(array)**は、新しい Object を作り array の値をコピーします
+- array のプロパティ("key", "value")も **コピーします**
+- Buffer の値をオブジェクトとしてクローンするために利用できます
 <!-- ----------------------------------------------------- -->
 
 # Task.dump()
@@ -315,13 +361,13 @@ task.exit(); // 強制終了 -> callback(new Error(...))
 
 <!-- ----------------------------------------------------- -->
 
-# task.message()
+# task.done(), message()
+
+## Error Handling
 
 ```js
 var task = new Task(1, function(err) {
-    if (err) {
-        console.log(err.message); // -> "O_o"
-    }
+    if (err) { console.log(err.message); } // -> "O_o"
 });
 
 function userTask(task) {
@@ -332,15 +378,58 @@ function userTask(task) {
         task.message(err.message).miss(); // task.message("O_o") を設定
     }
 }
-
 userTask(task);
 ```
-
-## 
 
 - エラーハンドリングはユーザタスク側で行ってください
 - 問題が発生したら **task.miss()** を呼んでください
 - **task.message()** を使うと、待機失敗時に callback に渡される Errorオブジェクトのメッセージを設定できます
+
+## 
+
+- **task.done** に Error オブジェクトを渡すと **task.message(err.message).miss()** として動作します
+- Errorオブジェクト以外なら **task.pass()** として動作します
+- task.done を使うと Error オブジェクトの有無で **task.pass()** または **task.miss()** を呼び分けている処理をシンプルに記述できます
+
+```js
+// このようなありがちなコードが
+
+if (err) { // Error Object
+    task.message(err.message).miss();
+} else {
+    task.pass();
+}
+```
+
+```js
+// こうなります
+
+task.done(err);
+```
+
+## 
+
+task.done() を使うと、先ほどのコードも
+
+```js
+    try {
+        throw new Error("O_o"); // 例外発生!
+        task.pass(); // ここには到達しない
+    } catch (err) {
+        task.message(err.message).miss(); // task.message("O_o") を設定
+    }
+```
+
+このように、シンプルになります
+
+```js
+    try {
+        throw new Error("O_o"); // 例外発生!
+        task.pass(); // ここには到達しない
+    } catch (err) {
+        task.done(err);
+    }
+```
 
 
 <!-- ----------------------------------------------------- -->
@@ -364,97 +453,7 @@ task.pass();    // ユーザタスク成功(userTaskCountは2なので待機成�
 ![](./assets/img/task.extend.png)
 
 
-<!-- ----------------------------------------------------- -->
 
-# task.done()
-
-## 
-
-- task.done を使うと Error オブジェクトの有無で **task.pass()** または **task.miss()** を呼び分けている処理をスッキリと記述できます
-
-```js
-// このようなありがちなコードが
-
-if (err) { // Error Object
-    task.message(err.message).miss();
-} else {
-    task.pass();
-}
-```
-
-```js
-// 一行で書けます
-
-task.done(err);
-```
-
-
-## 
-
-```js
-function callback(err, buffer) {
-    alert(err.message); // エラーメッセージ
-}
-
-var task = new Task(1, callback);
-
-task.done(new Error("エラーメッセージ"));
-```
-
-- **task.done** に Error オブジェクトを渡すと **task.message(err.message).miss()** として動作します
-- task.done の引数を指定しないか  
-  falsy な値(null, 0, undefined, "") を渡すと **task.pass()** として動作します
-
-
-
-
-<!-- ----------------------------------------------------- -->
-
-# Array Utilities
-
-## Task.flatten()
-
-```js
-var array = [ [1,2], [3,4] ];
-
-Task.flatten(array); // -> [1, 2, 3, 4]
-```
-
-- **Task.flatten(array)**を使うと、ネストした2次元配列を1次元配列に展開できます
-- 2次元配列を含んだ Buffer の値を展開する時に便利です
-
-
-```js
-Task.flatten([ [1,2], [3,4], [ [5,6] ] ]); // -> [1, 2, 3, 4, [5, 6] ]
-```
-
-- 3次元配列は2次元配列になります
-
-## Task.arraynize()
-
-```js
-var array = [1,2,3];
-array["key"] = "value"; // Array にプロパティを追加
-
-Task.arraynize(array); // -> [1, 2, 3] になる
-```
-
-- **Task.arraynize(array)**は、新しい配列を作り array の値をコピーします
-- array のプロパティ("key", "value")は **コピーしません**
-- Buffer の値をクローンするために利用できます
-
-## Task.objectize()
-
-```js
-var array = [1,2,3];
-array["key"] = "value"; // Array にプロパティを追加
-
-Task.objectize(array); // -> { 0: 1, 1: 2, 2: 3, key: "value" }
-```
-
-- **Task.objectize(array)**は、新しい Object を作り array の値をコピーします
-- array のプロパティ("key", "value")も **コピーします**
-- Buffer の値をオブジェクトとしてクローンするために利用できます
 
 <!-- ----------------------------------------------------- -->
 
@@ -710,10 +709,6 @@ Task.run("task_c + task_d + task_e", {
 ## バリデーション
 
 ```js
-Task.run("task_a + task_b + task_c", {
-    unknown_task_name: function(task) {},
-    bad_argument: function(/* task */) {}
-}, function() {});
 Task.run("task_a + task_b + task_c", {
     unknown_task_name: function(task) {},
     bad_argument: function(/* task */) {}
