@@ -6,6 +6,8 @@ var test = new Test().add([
         testPassWithObjectKey,
         testExecuteSyncAndAsyncTask,
         testMissable,
+        testMessageFromString,
+        testMessageFromError,
         testBufferKeyAccess,
         testFinisedAndFailureMessage,
         testJunctionSuccess,
@@ -33,13 +35,13 @@ var test = new Test().add([
         testArg,
         testThrowTask,
         // benchmark
-        test1000TaskBench,
+        test500TaskBench,
     ]);
 
     if (this["Promise"]) {
         test.add([
                 // benchmark
-                test1000PromiseBench,
+                test500PromiseBench,
             ]);
     }
 
@@ -173,6 +175,42 @@ function testMissable(next) {
         } else {
             console.log("testMissable ok");
             next && next.pass();
+        }
+    }
+}
+
+function testMessageFromString(next) {
+    var task = new Task(1, callback);
+    var error = new TypeError("O_o");
+
+    task.message(error.message);
+    task.miss();
+
+    function callback(err, buffer) {
+        if (err) {
+            console.log("testMessageFromString ok");
+            next && next.pass();
+        } else {
+            console.error("testMessageFromString ng");
+            next && next.miss();
+        }
+    }
+}
+
+function testMessageFromError(next) {
+    var task = new Task(1, callback);
+    var error = new TypeError("O_o");
+
+    task.message(error);
+    task.miss();
+
+    function callback(err, buffer) {
+        if (err) {
+            console.log("testMessageFromError ok");
+            next && next.pass();
+        } else {
+            console.error("testMessageFromError ng");
+            next && next.miss();
         }
     }
 }
@@ -699,20 +737,20 @@ function testThrowTask(next) {
 }
 
 
-function test1000TaskBench(next) {
+function test500TaskBench(next) {
 
     function callback(err, buffer) {
         if (err) {
-            console.error("test1000TaskBench ng");
+            console.error("test500TaskBench ng");
             next && next.miss();
         } else {
-            console.log("test1000TaskBench ok: " + (Date.now() - time));
+            console.log("test500TaskBench ok: " + (Date.now() - time));
             next && next.pass();
         }
     }
 
     // create task
-    var tasks = 1000;
+    var tasks = 500;
     var taskMap = [];
     for (var i = 0; i < tasks; ++i) {
         taskMap["task" + i] = function(task) { task.pass(); };
@@ -723,15 +761,15 @@ function test1000TaskBench(next) {
     Task.run("", taskMap, callback);
 }
 
-function test1000PromiseBench(next) {
+function test500PromiseBench(next) {
 
     function callback() {
-        console.log("test1000PromiseBench ok: " + (Date.now() - time));
+        console.log("test500PromiseBench ok: " + (Date.now() - time));
         next && next.pass();
     }
 
     // create task
-    var tasks = 1000;
+    var tasks = 500;
     var taskMap = [];
     for (var i = 0; i < tasks; ++i) {
         taskMap[i] = function() {
