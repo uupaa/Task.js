@@ -45,11 +45,11 @@ var test = new Test().add([
     test.add([ test500TaskBench ]);
 
     test.run().worker(function(err, test) {
-        if (!err) {
+        if (!err && typeof Task_ !== "undefined") {
             var undo = Test.swap(Task, Task_);
 
             new Test(test).run(function(err, test) {
-                undo = Test.undo(undo);
+                Test.undo(undo);
             });
         }
     });
@@ -434,6 +434,9 @@ function testCallback3rdArgIsTaskInstance(next) {
 function testDump(next) {
     function callback(err, buffer) {
     }
+
+    Task.drop();
+
     var task1 = new Task(1, callback, { name: "task1" });
     var task2 = new Task(1, callback, { name: "task1" });
     var task3 = new Task(1, callback, { name: "task1" });

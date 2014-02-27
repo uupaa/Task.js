@@ -6,8 +6,8 @@ onmessage = function(event) {
     var baseDir = event.data.baseDir;
 
     importScripts(baseDir + "../node_modules/uupaa.help.js/lib/Help.js");
-    importScripts(baseDir + "../lib/Task.js");
-    importScripts(baseDir + "../lib/Task.min.js");
+    importScripts(baseDir + "../lib/Type/Task.js");
+  //importScripts(baseDir + "../lib/Type/Task.min.js");
     importScripts(baseDir + "../node_modules/uupaa.test.js/lib/Test.js");
     importScripts(baseDir + "./test.js");
 
@@ -17,8 +17,10 @@ onmessage = function(event) {
 
 <script>exports = {};</script>
 <script src="../node_modules/uupaa.help.js/lib/Help.js"></script>
-<script src="../lib/Task.js"></script>
-<script src="../lib/Task.min.js"></script>
+<script src="../lib/Type/Task.js"></script>
+<!--
+<script src="../lib/Type/Task.min.js"></script>
+ -->
 <script src="../node_modules/uupaa.test.js/lib/Test.js"></script>
 <script src="./test.js"></script>
 </body></html>
