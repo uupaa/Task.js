@@ -1,7 +1,7 @@
 Task.js
 =======
 
-Task.js is counter based task executor.
+Counter based task executor.
 
 
 # Document
@@ -29,20 +29,12 @@ $ npm install
 
 ```sh
 $ npm run build
-
-    or
-
-$ node node_modules/uupaa.minify.js --keep --output ./lib/Task.min.js ./lib/Task.js
 ```
 
 # Test
 
 ```sh
 $ npm run test
-
-  or
-
-$ npm test
 ```
 
 # Lint
@@ -55,12 +47,12 @@ $ npm run lint
 ```sh
 $ node
 
-    var Task = require("uupaa.task.js"); // [!] need ".js"
-    var task = new Task(2, function(err) {
-        console.log("task done");
-    });
-    task.pass();
-    task.pass();
+var Task = require("uupaa.task.js"); // [!] need ".js"
+var task = new Task(2, function(err) {
+    console.log("task done");
+});
+task.pass();
+task.pass();
 ```
 
 # for Browser

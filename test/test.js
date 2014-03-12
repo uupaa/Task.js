@@ -46,10 +46,10 @@ var test = new Test().add([
 
     test.run().worker(function(err, test) {
         if (!err && typeof Task_ !== "undefined") {
-            var undo = Test.swap(Task, Task_);
+            var name = Test.swap(Task, Task_);
 
             new Test(test).run(function(err, test) {
-                Test.undo(undo);
+                Test.undo(name);
             });
         }
     });
