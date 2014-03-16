@@ -1,25 +1,20 @@
 {
   "name":           "uupaa.task.js",
-  "version":        "0.8.20",
+  "version":        "0.8.21",
   "description":    "Counter based task executor.",
   "url":            "https://github.com/uupaa/Task.js",
   "keywords":       ["async", "task", "flow", "util", "uupaa"],
-  "author":         "uupaa <uupaa.js@gmail.com>",
   "repository": {
     "type":         "git",
     "url":          "https://github.com/uupaa/Task.js.git"
   },
   "scripts": {
     "watch":        "node node_modules/uupaa.watch.js --verbose --action build ./lib/Task.js",
-    "build":        "node node_modules/uupaa.minify.js --keep --output ./lib/Task.min.js ./lib/Task.js",
-    "build-release":"node node_modules/uupaa.minify.js --module all --output ./lib/Task.min.js",
+    "build":        "node node_modules/uupaa.minify.js --output ./lib/Task.min.js --verbose --keep --pretty ./lib/Task.js",
+    "build-simple": "node node_modules/uupaa.minify.js --output ./lib/Task.min.js --verbose --keep --pretty --nowrap --simple ./lib/Task.js",
+    "build-release":"node node_modules/uupaa.minify.js --output ./lib/Task.min.js --verbose --build all",
     "test":         "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js; open test/index.html",
-    "lint":         "plato --title Task.js --jshint .jshintrc -d lint/plato ./lib/Task.js; open lint/plato/index.html",
-
-    "watch-type":   "node node_modules/uupaa.watch.js --verbose --action build-type ./lib/Type/Task.ts",
-    "build-type":   "tsc -m commonjs -d ./lib/Type/Task.ts; tsc -m commonjs ./lib/Type/Task.ts",
-    "test-type":    "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js; open test/index.type.html",
-    "lint-type":    "plato --title Task.ts --jshint .jshintrc -d lint/plato ./lib/Type/Task.js; open lint/plato/index.html"
+    "lint":         "node lint/plato.js; open lint/plato/index.html"
   },
   "build": {
     "all": { "lib/Task.js": "" },
@@ -38,6 +33,7 @@
   },
   "lib":            "./lib/",
   "main":           "./index.js",
+  "author":         "uupaa <uupaa.js@gmail.com>",
   "license":        "MIT",
   "contributors":   []
 }

@@ -44,12 +44,16 @@ var test = new Test().add([
     }
     test.add([ test500TaskBench ]);
 
-    test.run().worker(function(err, test) {
-        if (!err && typeof Task_ !== "undefined") {
-            var name = Test.swap(Task, Task_);
+    test.run(function(err, test) {
+        if (1) {
+            err || test.worker(function(err, test) {
+                if (!err && typeof Task_ !== "undefined") {
+                    var name = Test.swap(Task, Task_);
 
-            new Test(test).run(function(err, test) {
-                Test.undo(name);
+                    new Test(test).run(function(err, test) {
+                        Test.undo(name);
+                    });
+                }
             });
         }
     });
