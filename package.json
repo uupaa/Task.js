@@ -1,26 +1,24 @@
 {
   "name":           "uupaa.task.js",
-  "version":        "0.8.21",
+  "version":        "0.8.22",
   "description":    "Counter based task executor.",
   "url":            "https://github.com/uupaa/Task.js",
-  "keywords":       ["async", "task", "flow", "util", "uupaa"],
+  "keywords":       ["async", "task", "flow", "util", "uupaa", "WebModule"],
   "repository": {
     "type":         "git",
     "url":          "https://github.com/uupaa/Task.js.git"
   },
   "scripts": {
-    "watch":        "node node_modules/uupaa.watch.js --verbose --action build ./lib/Task.js",
-    "build":        "node node_modules/uupaa.minify.js --output ./lib/Task.min.js --verbose --keep --pretty ./lib/Task.js",
-    "build-simple": "node node_modules/uupaa.minify.js --output ./lib/Task.min.js --verbose --keep --pretty --nowrap --simple ./lib/Task.js",
-    "build-release":"node node_modules/uupaa.minify.js --output ./lib/Task.min.js --verbose --build all",
+    "watch":        "node node_modules/uupaa.watch.js --verbose --action build",
+    "build":        "node node_modules/uupaa.minify.js --verbose --strict --keep --pretty",
+    "build-simple": "node node_modules/uupaa.minify.js --verbose --strict --keep --pretty --nowrap --simple",
+    "build-release":"node node_modules/uupaa.minify.js --verbose --strict --module",
     "test":         "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js; open test/index.html",
-    "lint":         "node lint/plato.js; open lint/plato/index.html"
+    "lint":         "node node_modules/uupaa.plato.js; open lint/plato/index.html"
   },
-  "build": {
-    "all": { "lib/Task.js": "" },
-    "node": { },
-    "worker": { },
-    "browser": { }
+  "x-build": {
+    "inputs":       ["lib/Task.js"],
+    "output":       "lib/Task.min.js"
   },
   "dependencies": {
   },
@@ -29,6 +27,7 @@
     "uupaa.help.js":    "",
     "uupaa.test.js":    "",
     "uupaa.watch.js":   "",
+    "uupaa.plato.js":   "",
     "uupaa.minify.js":  ""
   },
   "lib":            "./lib/",

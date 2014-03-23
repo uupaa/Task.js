@@ -6,7 +6,7 @@ Counter based task executor.
 
 # Document
 
-- http://uupaa.github.io/Task.js/slide/
+- http://uupaa.github.io/Slide/slide/Task.js/index.html
 - https://github.com/uupaa/Task.js/wiki/Task
 
 # Install development dependency tools
