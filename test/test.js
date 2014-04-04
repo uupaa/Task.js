@@ -36,6 +36,8 @@ var test = new Test().add([
         testThrowTask,
         testLoopObject,
         testLoopArray,
+        // --- mix ---
+        testOmitCallback,
     ]);
 
     if (this["XMLHttpRequest"]) {
@@ -876,6 +878,21 @@ function testLoopArray(next) {
         values += source[key];
 
         task.pass();
+    }
+}
+
+function testOmitCallback(next) {
+
+    try {
+        var task1 = new Task(1);
+        var task2 = Task.run("", {});
+        var task3 = Task.loop({}, function(){});
+
+        console.log("testOmitCallback ok");
+        next && next.pass();
+    } catch (o_O) {
+        console.error("testOmitCallback ng");
+        next && next.miss();
     }
 }
 
