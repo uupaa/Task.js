@@ -833,35 +833,11 @@ function test500PromiseBench(next) {
 
 function testLoopObject(next) {
 
-    var object = { a: 1, b: 2, c: 3 };
+    var source = { a: 1, b: 2, c: 3 };
     var keys = "";
     var values = "";
 
-/*
-    var keys = Object.keys(object);
-    Task.run(new Array(keys.length + 1).join("_").split("").join(" > "), {
-        _: function(task, arg, index) {
-            callback(task, keys[index], object);
-        }
-    }, function(err, buffer) {
-        if (err) {
-            console.log("testLoop ng");
-            next && next.miss();
-        } else {
-            console.log("testLoop ok");
-            next && next.pass();
-        }
-    }, {});
-
-    function callback(task, key, object) {
-        keys   += key;
-        values += object[key];
-
-        task.pass();
-    }
- */
-
-    Task.loop(object, _tick, function(err, buffer) {
+    Task.loop(source, _tick, function(err, buffer) {
         if (err || keys !== "abc" || values !== "123") {
             console.log("testLoopObject ng");
             next && next.miss();
@@ -871,9 +847,9 @@ function testLoopObject(next) {
         }
     });
 
-    function _tick(task, key, object) {
+    function _tick(task, key, source) {
         keys   += key;
-        values += object[key];
+        values += source[key];
 
         task.pass();
     }
@@ -881,11 +857,11 @@ function testLoopObject(next) {
 
 function testLoopArray(next) {
 
-    var array = ["e1", "e2", "e3"];
+    var source = ["e1", "e2", "e3"];
     var keys = "";
     var values = "";
 
-    Task.loop(array, _tick, function(err, buffer) {
+    Task.loop(source, _tick, function(err, buffer) {
         if (err || keys !== "012" || values !== "e1e2e3") {
             console.log("testLoopArray ng");
             next && next.miss();
@@ -895,9 +871,9 @@ function testLoopArray(next) {
         }
     });
 
-    function _tick(task, key, object) {
+    function _tick(task, key, source) {
         keys   += key;
-        values += object[key];
+        values += source[key];
 
         task.pass();
     }
