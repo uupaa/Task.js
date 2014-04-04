@@ -34,6 +34,7 @@ var test = new Test().add([
         testMapWithoutRoute,
         testArg,
         testThrowTask,
+        testLoop,
     ]);
 
     if (this["XMLHttpRequest"]) {
@@ -416,7 +417,7 @@ function testJunctionWithSharedBuffer2(next) {
 
 /*
 function testCallback3rdArgIsTaskInstance(next) {
-    function callback(err, buffer, task) {
+    function callback(err, buffer) {
 
         if (task === junction) {
             console.log("testCallback3rdArgIsTaskInstance ok");
@@ -575,7 +576,7 @@ function testTaskCancel(next) {
 
     var task = Task.run("1000 > 1000 > 1000", {
 
-    }, function(err, buffer, task) {
+    }, function(err, buffer) {
         if (err && err.message === "exit task") { // exit task
             console.log("testTaskCancel ok");
             next && next.pass();
@@ -601,7 +602,7 @@ function testBasicFunction(next) {
                                                               : task.miss(); },
         task_c: function(task) { route += "c"; route === "abc" ? task.pass()
                                                                : task.miss(); },
-    }, function(err, buffer, task) {
+    }, function(err, buffer) {
         if (err) {
             console.log("testBasicFunction ng");
             next && next.miss();
@@ -626,7 +627,7 @@ function testParallelExecution(next) {
                                                                  : task.miss(); },
         task_e: function(task) { route += "e"; route.split("").sort().join("") === "abcde" ? task.pass()
                                                                                            : task.miss() },
-    }, function(err, buffer, task) {
+    }, function(err, buffer) {
         if (err) {
             console.log("testParallelExecution ng");
             next && next.miss();
@@ -645,7 +646,7 @@ function testDelay(next) {
     Task.run("task_a > 1000 > task_b", {
         task_a: function(task) { last = Date.now(); task.pass(); },
         task_b: function(task) { Date.now() - last ? task.pass() : task.miss() },
-    }, function(err, buffer, task) {
+    }, function(err, buffer) {
         if (err) {
             console.log("testDelay ng");
             next && next.miss();
@@ -660,7 +661,7 @@ function testZeroDelay(next) {
 
     Task.run("0 > 0 > 0", {
 
-    }, function(err, buffer, task) {
+    }, function(err, buffer) {
         if (err) {
             console.log("testZeroDelay ng");
             next && next.miss();
@@ -681,7 +682,7 @@ function testArrayTask(next) {
                                                       : task.miss(); },
         function(task) { route += "c"; route === "abc" ? task.pass()
                                                        : task.miss(); },
-    ], function(err, buffer, task) {
+    ], function(err, buffer) {
         if (err) {
             console.log("testArrayTask ng");
             next && next.miss();
@@ -702,7 +703,7 @@ function testArrayWithRoute(next) {
                                                        : task.miss(); },
         function(task) { route += "c"; route === "ac" ? task.pass()
                                                       : task.miss(); },
-    ], function(err, buffer, task) {
+    ], function(err, buffer) {
         if (err) {
             console.log("testArrayWithRoute ng");
             next && next.miss();
@@ -717,7 +718,6 @@ function testArrayWithRoute(next) {
 function testMapWithoutRoute(next) {
 
     var route = "";
-    var last = 0;
 
     Task.run("task_a > task_c > task_b", {
         task_a: function(task) { route += "a"; task.pass(); },
@@ -725,7 +725,7 @@ function testMapWithoutRoute(next) {
                                                                : task.miss(); },
         task_c: function(task) { route += "c"; route === "ac" ? task.pass()
                                                               : task.miss(); },
-    }, function(err, buffer, task) {
+    }, function(err, buffer) {
         if (err) {
             console.log("testMapWithoutRoute ng");
             next && next.miss();
@@ -741,7 +741,6 @@ function testArg(next) {
 
     var arg = { a: 1, b: 2, c: 3 };
     var route = "";
-    var last = 0;
 
     Task.run("task_a > task_c > task_b", {
         task_a: function(task, arg) { route += arg.a; task.pass(); },
@@ -749,7 +748,7 @@ function testArg(next) {
                                                                         : task.miss(); },
         task_c: function(task, arg) { route += arg.c; route === "13" ? task.pass()
                                                                        : task.miss(); },
-    }, function(err, buffer, task) {
+    }, function(err, buffer) {
         if (err) {
             console.log("testArg ng");
             next && next.miss();
@@ -831,4 +830,51 @@ function test500PromiseBench(next) {
     Promise.all(taskMap).then(callback);
 }
 
+function testLoop(next) {
+
+    var object = { a: 1, b: 2, c: 3 };
+    var keys = "";
+    var values = "";
+
+/*
+    var keys = Object.keys(object);
+    Task.run(new Array(keys.length + 1).join("_").split("").join(" > "), {
+        _: function(task, arg, index) {
+            callback(task, keys[index], object);
+        }
+    }, function(err, buffer) {
+        if (err) {
+            console.log("testLoop ng");
+            next && next.miss();
+        } else {
+            console.log("testLoop ok");
+            next && next.pass();
+        }
+    }, {});
+
+    function callback(task, key, object) {
+        keys   += key;
+        values += object[key];
+
+        task.pass();
+    }
+ */
+
+    Task.loop(object, _tick, function(err, buffer) {
+        if (err || keys !== "abc" || values !== "123") {
+            console.log("testLoop ng");
+            next && next.miss();
+        } else {
+            console.log("testLoop ok");
+            next && next.pass();
+        }
+    });
+
+    function _tick(task, key, object) {
+        keys   += key;
+        values += object[key];
+
+        task.pass();
+    }
+}
 

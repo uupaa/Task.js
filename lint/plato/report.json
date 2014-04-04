@@ -2,62 +2,62 @@
   "reports": [
     {
       "info": {
-        "file": "./lib/Task.js",
-        "fileShort": "./lib/Task.js",
-        "fileSafe": "__lib_Task_js",
-        "link": "files/__lib_Task_js/index.html"
+        "file": "lib/Task.js",
+        "fileShort": "lib/Task.js",
+        "fileSafe": "lib_Task_js",
+        "link": "files/lib_Task_js/index.html"
       },
       "jshint": {
         "messages": 0
       },
       "complexity": {
         "aggregate": {
-          "line": 4,
+          "line": 5,
           "complexity": {
             "sloc": {
-              "physical": 445,
-              "logical": 232
+              "physical": 476,
+              "logical": 242
             },
             "cyclomatic": 52,
             "halstead": {
               "operators": {
-                "distinct": 35,
-                "total": 587,
+                "distinct": 36,
+                "total": 625,
                 "identifiers": [
                   "__stripped__"
                 ]
               },
               "operands": {
-                "distinct": 197,
-                "total": 743,
+                "distinct": 206,
+                "total": 799,
                 "identifiers": [
                   "__stripped__"
                 ]
               },
-              "length": 1330,
-              "vocabulary": 232,
-              "difficulty": 66.00253807106598,
-              "volume": 10451.114723519671,
-              "effort": 689800.0974241854,
-              "bugs": 3.4837049078398903,
-              "time": 38322.227634676965
+              "length": 1424,
+              "vocabulary": 242,
+              "difficulty": 69.81553398058252,
+              "volume": 11276.461249879025,
+              "effort": 787272.163571651,
+              "bugs": 3.7588204166263415,
+              "time": 43737.34242064728
             },
-            "params": 37
+            "params": 44
           }
         },
-        "module": "./lib/Task.js",
-        "maintainability": 64.96269436273663
+        "module": "lib/Task.js",
+        "maintainability": 65.18068986459652
       }
     }
   ],
   "summary": {
     "total": {
-      "sloc": 445,
-      "maintainability": 64.96269436273663
+      "sloc": 476,
+      "maintainability": 65.18068986459652
     },
     "average": {
-      "sloc": 445,
-      "maintainability": "64.96"
+      "sloc": 476,
+      "maintainability": "65.18"
     }
   }
 }
