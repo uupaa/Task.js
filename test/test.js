@@ -34,7 +34,8 @@ var test = new Test().add([
         testMapWithoutRoute,
         testArg,
         testThrowTask,
-        testLoop,
+        testLoopObject,
+        testLoopArray,
     ]);
 
     if (this["XMLHttpRequest"]) {
@@ -830,7 +831,7 @@ function test500PromiseBench(next) {
     Promise.all(taskMap).then(callback);
 }
 
-function testLoop(next) {
+function testLoopObject(next) {
 
     var object = { a: 1, b: 2, c: 3 };
     var keys = "";
@@ -862,10 +863,34 @@ function testLoop(next) {
 
     Task.loop(object, _tick, function(err, buffer) {
         if (err || keys !== "abc" || values !== "123") {
-            console.log("testLoop ng");
+            console.log("testLoopObject ng");
             next && next.miss();
         } else {
-            console.log("testLoop ok");
+            console.log("testLoopObject ok");
+            next && next.pass();
+        }
+    });
+
+    function _tick(task, key, object) {
+        keys   += key;
+        values += object[key];
+
+        task.pass();
+    }
+}
+
+function testLoopArray(next) {
+
+    var array = ["e1", "e2", "e3"];
+    var keys = "";
+    var values = "";
+
+    Task.loop(array, _tick, function(err, buffer) {
+        if (err || keys !== "012" || values !== "e1e2e3") {
+            console.log("testLoopArray ng");
+            next && next.miss();
+        } else {
+            console.log("testLoopArray ok");
             next && next.pass();
         }
     });
