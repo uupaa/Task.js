@@ -15,49 +15,49 @@ __report = {
           "line": 5,
           "complexity": {
             "sloc": {
-              "physical": 483,
-              "logical": 250
+              "physical": 471,
+              "logical": 245
             },
-            "cyclomatic": 57,
+            "cyclomatic": 55,
             "halstead": {
               "operators": {
-                "distinct": 36,
-                "total": 637,
+                "distinct": 37,
+                "total": 631,
                 "identifiers": [
                   "__stripped__"
                 ]
               },
               "operands": {
-                "distinct": 206,
-                "total": 813,
+                "distinct": 204,
+                "total": 800,
                 "identifiers": [
                   "__stripped__"
                 ]
               },
-              "length": 1450,
-              "vocabulary": 242,
-              "difficulty": 71.03883495145631,
-              "volume": 11482.351694048164,
-              "effort": 815692.8868480623,
-              "bugs": 3.8274505646827213,
-              "time": 45316.27149155902
+              "length": 1431,
+              "vocabulary": 241,
+              "difficulty": 72.54901960784314,
+              "volume": 11323.344640145075,
+              "effort": 821497.5523242505,
+              "bugs": 3.7744482133816915,
+              "time": 45638.7529069028
             },
-            "params": 45
+            "params": 43
           }
         },
         "module": "lib/Task.js",
-        "maintainability": 65.6053748856712
+        "maintainability": 65.46610798863638
       }
     }
   ],
   "summary": {
     "total": {
-      "sloc": 483,
-      "maintainability": 65.6053748856712
+      "sloc": 471,
+      "maintainability": 65.46610798863638
     },
     "average": {
-      "sloc": 483,
-      "maintainability": "65.61"
+      "sloc": 471,
+      "maintainability": "65.47"
     }
   }
 }

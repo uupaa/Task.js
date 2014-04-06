@@ -9,6 +9,11 @@ Counter based task executor.
 - http://uupaa.github.io/Slide/slide/Task.js/index.html
 - https://github.com/uupaa/Task.js/wiki/Task
 
+and
+
+- https://github.com/uupaa/WebModule and [slide](http://uupaa.github.io/Slide/slide/WebModule/index.html)
+- https://github.com/uupaa/Help.js and [slide](http://uupaa.github.io/Slide/slide/Help.js/index.html)
+
 # Install development dependency tools
 
 ```sh
