@@ -1,0 +1,53 @@
+{
+  "name": {
+    "git": "Task.js",
+    "npm": "uupaa.task.js"
+  },
+  "build": {
+    "files": [
+      "lib/Task.js"
+    ],
+    "output": "release/Task.min.js",
+    "target": [
+      "Browser",
+      "Worker",
+      "Node"
+    ]
+  },
+  "moduleTargets": {
+    "uupaa.task.js": [
+      "Browser",
+      "Worker",
+      "Node"
+    ],
+    "uupaa.console.js": [
+      "Worker"
+    ],
+    "uupaa.valid.js": [
+      "Browser",
+      "Worker",
+      "Node"
+    ],
+    "uupaa.minify.js": []
+  },
+  "dependenciesFiles": [],
+  "dependenciesModules": [],
+  "devDependenciesFiles": [
+    "node_modules/uupaa.console.js/lib/Console.js",
+    "node_modules/uupaa.valid.js/lib/Valid.js",
+    "node_modules/uupaa.help.js/lib/Help.js",
+    "node_modules/uupaa.test.js/lib/Test.js",
+    "node_modules/uupaa.watch.js/lib/Watch.js",
+    "node_modules/uupaa.plato.js/lib/Plato.js",
+    "node_modules/uupaa.minify.js/lib/Minify.js"
+  ],
+  "devDependenciesModules": [
+    "uupaa.console.js",
+    "uupaa.valid.js",
+    "uupaa.help.js",
+    "uupaa.test.js",
+    "uupaa.watch.js",
+    "uupaa.plato.js",
+    "uupaa.minify.js"
+  ]
+}
