@@ -1,6 +1,6 @@
 {
   "name":           "uupaa.task.js",
-  "version":        "0.8.31",
+  "version":        "0.8.32",
   "description":    "Counter based task executor.",
   "url":            "https://github.com/uupaa/Task.js",
   "keywords":       ["async", "task", "flow", "util", "uupaa", "WebModule"],
@@ -14,6 +14,7 @@
     "build-simple": "node node_modules/uupaa.minify.js --verbose --strict --keep --pretty --nowrap --simple",
     "build-release":"node node_modules/uupaa.minify.js --verbose --strict --module",
     "test":         "npm run test-node; npm run test-browser",
+    "test-page": "node node_modules/uupaa.test.js/bin/TestPage.js --verbose",
     "test-node":    "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js",
     "test-browser": "open test/index.html",
     "lint":         "node node_modules/uupaa.plato.js; open lint/plato/index.html"
@@ -21,11 +22,12 @@
   "x-build": {
     "files":        ["lib/Task.js"],
     "output":       "release/Task.min.js",
-    "target":       ["Browser", "Worker", "Node"]
+    "target":       ["all"]
   },
   "dependencies": {
   },
   "devDependencies": {
+    "uupaa.nodemodule.js": "",
     "uupaa.console.js": "",
     "uupaa.valid.js":   "",
     "uupaa.help.js":    "",

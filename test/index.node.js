@@ -1,6 +1,6 @@
-require("uupaa.valid.js");
+require("../node_modules/uupaa.nodemodule.js/lib/NodeModule.js");
+require("../node_modules/uupaa.valid.js/lib/Valid.js");
 require("../lib/Task.js");
 require("../release/Task.min.js");
-require("uupaa.test.js");
+require("../node_modules/uupaa.test.js/lib/Test.js");
 require("./test.js");
-
