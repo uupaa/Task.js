@@ -1,16 +1,17 @@
 <!DOCTYPE html><html><head><title>test</title>
+<meta name="viewport" content="width=device-width, user-scalable=no">
 <meta charset="utf-8"></head><body>
 
 <script id="worker" type="javascript/worker">
 onmessage = function(event) {
-    var baseDir = event.data.baseDir;
+    self.MESSAGE = event.data;
 
-    importScripts(baseDir + "../node_modules/uupaa.console.js/lib/Console.js");
-    importScripts(baseDir + "../node_modules/uupaa.valid.js/lib/Valid.js");
-    importScripts(baseDir + "../lib/Task.js");
-    importScripts(baseDir + "../release/Task.min.js");
-    importScripts(baseDir + "../node_modules/uupaa.test.js/lib/Test.js");
-    importScripts(baseDir + "./test.js");
+    importScripts(MESSAGE.BASE_DIR + "../node_modules/uupaa.console.js/lib/Console.js");
+    importScripts(MESSAGE.BASE_DIR + "../node_modules/uupaa.valid.js/lib/Valid.js");
+    importScripts(MESSAGE.BASE_DIR + "../lib/Task.js");
+    importScripts(MESSAGE.BASE_DIR + "../node_modules/uupaa.test.js/lib/Test.js");
+    importScripts(MESSAGE.BASE_DIR + "../release/Task.min.js");
+    importScripts(MESSAGE.BASE_DIR + "./test.js");
 
     self.postMessage({ error: self.errorMessage || "" });
 };
@@ -19,8 +20,8 @@ onmessage = function(event) {
 <script src="../node_modules/uupaa.valid.js/lib/Valid.js"></script>
 <script src="../node_modules/uupaa.help.js/lib/Help.js"></script>
 <script src="../lib/Task.js"></script>
-<script src="../release/Task.min.js"></script>
 <script src="../node_modules/uupaa.test.js/lib/Test.js"></script>
+<script src="../release/Task.min.js"></script>
 <script src="./test.js"></script>
 
 </body></html>

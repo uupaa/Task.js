@@ -1,4 +1,13 @@
-var test = new Test().add([
+var ModuleTestTask = (function(global) {
+
+var test = new Test("Task", {
+        disable:    false,
+        browser:    true,
+        worker:     true,
+        node:       true,
+        button:     true,
+        both:       true,
+    }).add([
         // --- Task ---
         testPassWithoutArgument,
         testMissWithoutArgument,
@@ -48,19 +57,7 @@ var test = new Test().add([
     }
     test.add([ test500TaskBench ]);
 
-    test.run(function(err, test) {
-        if (1) {
-            err || test.worker(function(err, test) {
-                if (!err && typeof Task_ !== "undefined") {
-                    var name = Test.swap(Task, Task_);
-
-                    new Test(test).run(function(err, test) {
-                        Test.undo(name);
-                    });
-                }
-            });
-        }
-    });
+return test.run().clone();
 
 function testPassWithoutArgument(next) {
     var task = new Task(2, callback, { name: "testPassWithoutArgument" });
@@ -72,10 +69,8 @@ function testPassWithoutArgument(next) {
     function callback(err, buffer) { // buffer = []
 
         if (err === null && buffer.join() === "") {
-            console.log("testPassWithoutArgument ok");
             next && next.pass();
         } else {
-            console.error("testPassWithoutArgument ng");
             next && next.miss();
         }
     }
@@ -91,10 +86,8 @@ function testMissWithoutArgument(next) {
     function callback(err, buffer) { // buffer = []
 
         if (err instanceof Error && buffer.join() === "") {
-            console.log("testMissWithoutArgument ok");
             next && next.pass();
         } else {
-            console.error("testMissWithoutArgument ng");
             next && next.miss();
         }
     }
@@ -109,10 +102,8 @@ function testExitWithoutArgument(next) {
     function callback(err, buffer) { // buffer = []
 
         if (err instanceof Error && buffer.join() === "") {
-            console.log("testExitWithoutArgument ok");
             next && next.pass();
         } else {
-            console.error("testExitWithoutArgument ng");
             next && next.miss();
         }
     }
@@ -135,10 +126,8 @@ function testPassWithObjectKey(next) {
             flattenValues.join() === [0, 3].join() &&
             buffer_left === JSON.stringify({ "0": 0, "1": 3, "one": 1, "two": 2 })) {
 
-            console.log("testPassWithObjectKey ok");
             next && next.pass();
         } else {
-            console.error("testPassWithObjectKey ng");
             next && next.miss();
         }
     }
@@ -156,10 +145,8 @@ function testExecuteSyncAndAsyncTask(next) { // task sync 4 events
 
     function callback(err, buffer) { // err = null, buffer = [1,2,3,4]
         if ( buffer.join() === testResult.join() ) {
-            console.log("testExecuteSyncAndAsyncTask ok");
             next && next.pass();
         } else {
-            console.error("testExecuteSyncAndAsyncTask ng");
             next && next.miss();
         }
     }
@@ -177,10 +164,8 @@ function testMissable(next) {
 
     function callback(err, buffer) {
         if (err) {
-            console.error("testMissable ng");
             next && next.miss();
         } else {
-            console.log("testMissable ok");
             next && next.pass();
         }
     }
@@ -218,10 +203,8 @@ function testMissableRecover(next) {
 
     function callback(err, buffer) {
         if (err) {
-            console.error("testMissableRecover ng");
             next && next.miss();
         } else {
-            console.log("testMissableRecover ok");
             next && next.pass();
         }
     }
@@ -236,10 +219,8 @@ function testMessageFromString(next) {
 
     function callback(err, buffer) {
         if (err) {
-            console.log("testMessageFromString ok");
             next && next.pass();
         } else {
-            console.error("testMessageFromString ng");
             next && next.miss();
         }
     }
@@ -254,10 +235,8 @@ function testMessageFromError(next) {
 
     function callback(err, buffer) {
         if (err) {
-            console.log("testMessageFromError ok");
             next && next.pass();
         } else {
-            console.error("testMessageFromError ng");
             next && next.miss();
         }
     }
@@ -272,10 +251,8 @@ function testBufferKeyAccess(next) {
                 buf.key1 === "value1" &&
                 buf.key2 === "value2") {
 
-                console.log("testBufferKeyAccess ok");
                 next && next.pass();
             } else {
-                console.error("testBufferKeyAccess ng");
                 next && next.miss();
             }
         }, { name: "testBufferKeyAccess" });
@@ -289,10 +266,8 @@ function testFinisedAndFailureMessage(next) {
     var task = new Task(1, function(err,    // Error("fail reason")
                                     buffer) { // ["value"] + { key: "value" }
             if (err && err.message === "fail reason") {
-                console.log("testFinisedAndFailureMessage ok");
                 next && next.pass();
             } else {
-                console.error("testFinisedAndFailureMessage ng");
                 next && next.miss();
             }
         }, { name: "testFinisedAndFailureMessage" });
@@ -305,10 +280,8 @@ function testFinisedAndFailureMessage(next) {
 function testJunctionSuccess(next) {
     var junction = new Task(2, function(err, buffer) {
             if (!err) {
-                console.log("testJunctionSuccess ok");
                 next && next.pass();
             } else {
-                console.error("testJunctionSuccess ng");
                 next && next.miss();
             }
         }, { name: "testJunctionSuccess" });
@@ -325,10 +298,8 @@ function testJunctionSuccess(next) {
 function testJunctionFail(next) {
     var junction = new Task(2, function(err) {
             if (err) {
-                console.log("testJunctionFail ok");
                 next && next.pass();
             } else {
-                console.error("testJunctionFail ng");
                 next && next.miss();
             }
         });
@@ -346,10 +317,8 @@ function testJunctionWithSelfSharedBuffer(next) {
     function callback(err, buffer) { // [1,2,3,4]
 
         if (buffer.sort().join() === "1,2,3,4") {
-            console.log("testJunctionWithSelfSharedBuffer ok");
             next && next.pass();
         } else {
-            console.error("testJunctionWithSelfSharedBuffer ng");
             next && next.miss();
         }
     }
@@ -370,10 +339,8 @@ function testJunctionWithSharedBuffer(next) {
     function callback(err, buffer) { // [1,2,3,4]
 
         if (buffer.sort().join() === "1,2,3,4") {
-            console.log("testJunctionWithSharedBuffer ok");
             next && next.pass();
         } else {
-            console.error("testJunctionWithSharedBuffer ng");
             next && next.miss();
         }
     }
@@ -393,10 +360,8 @@ function testJunctionWithSharedBuffer2(next) {
                       buffer) { // [ "SHARE PAYLOAD", 1.1, 2.2, 3.3, 4.4 ] + { a: 1, b: 2, c: 3, d: 4 }
 
         if (buffer.join() === "SHARE PAYLOAD,1.1,2.2,3.3,4.4") {
-            console.log("testJunctionWithSharedBuffer2 ok");
             next && next.pass();
         } else {
-            console.error("testJunctionWithSharedBuffer2 ng");
             next && next.miss();
         }
     }
@@ -423,10 +388,8 @@ function testCallback3rdArgIsTaskInstance(next) {
     function callback(err, buffer) {
 
         if (task === junction) {
-            console.log("testCallback3rdArgIsTaskInstance ok");
             next && next.pass();
         } else {
-            console.error("testCallback3rdArgIsTaskInstance ng");
             next && next.miss();
         }
     }
@@ -461,12 +424,10 @@ function testDump(next) {
             "missedCount" in r &&
             "state" in r) {
 
-            console.log("testDump ok");
             next && next.pass();
             return
         }
     }
-    console.error("testDump ng");
     next && next.miss();
 }
 
@@ -482,10 +443,8 @@ function testDumpAll(next) {
     var result = Task.dump();
 
     if (Object.keys(result).length === 3) {
-        console.log("testDumpAll ok");
         next && next.pass();
     } else {
-        console.error("testDumpAll ng");
         next && next.miss();
     }
 }
@@ -500,10 +459,8 @@ function testDumpMissMatch(next) {
     var result = Task.dump("task2");
 
     if (!Object.keys(result).length) {
-        console.log("testDumpMissMatch ok");
         next && next.pass();
     } else {
-        console.error("testDumpMissMatch ng");
         next && next.miss();
     }
 }
@@ -519,10 +476,8 @@ function testDrop(next) {
     var result = Task.dump("task2");
 
     if (!Object.keys(result).length) {
-        console.log("testDrop ok");
         next && next.pass();
     } else {
-        console.error("testDrop ng");
         next && next.miss();
     }
 }
@@ -530,10 +485,8 @@ function testDrop(next) {
 function testZeroTaskCount(next) {
     function callback(err, buffer) {
         if (!err) {
-            console.log("testZeroTaskCount ok");
             next && next.pass();
         } else {
-            console.error("testZeroTaskCount ng");
             next && next.miss();
         }
     }
@@ -548,10 +501,8 @@ function testSharedBuffer(next) {
 
     var junction = new Task(2, function(err, buffer, junction) {
             if (Task.flatten(buffer).join() === "value2,value2") {
-                console.log("testSharedBuffer ok");
                 next && next.pass();
             } else {
-                console.log("testSharedBuffer ng");
                 next && next.miss();
             }
         });
@@ -567,10 +518,8 @@ function testNoTask(next) {
         }, function() {
         });
 
-        console.log("testNoTask ok");
         next && next.pass();
     } catch(o_o) {
-        console.log("testNoTask ng");
         next && next.miss();
     }
 }
@@ -581,10 +530,8 @@ function testTaskCancel(next) {
 
     }, function(err, buffer) {
         if (err && err.message === "exit task") { // exit task
-            console.log("testTaskCancel ok");
             next && next.pass();
         } else {
-            console.log("testTaskCancel ng");
             next && next.miss();
         }
     });
@@ -607,10 +554,8 @@ function testBasicFunction(next) {
                                                                : task.miss(); },
     }, function(err, buffer) {
         if (err) {
-            console.log("testBasicFunction ng");
             next && next.miss();
         } else {
-            console.log("testBasicFunction ok");
             next && next.pass();
         }
     });
@@ -632,10 +577,8 @@ function testParallelExecution(next) {
                                                                                            : task.miss() },
     }, function(err, buffer) {
         if (err) {
-            console.log("testParallelExecution ng");
             next && next.miss();
         } else {
-            console.log("testParallelExecution ok");
             next && next.pass();
         }
     });
@@ -651,10 +594,8 @@ function testDelay(next) {
         task_b: function(task) { Date.now() - last ? task.pass() : task.miss() },
     }, function(err, buffer) {
         if (err) {
-            console.log("testDelay ng");
             next && next.miss();
         } else {
-            console.log("testDelay ok");
             next && next.pass();
         }
     });
@@ -666,10 +607,8 @@ function testZeroDelay(next) {
 
     }, function(err, buffer) {
         if (err) {
-            console.log("testZeroDelay ng");
             next && next.miss();
         } else {
-            console.log("testZeroDelay ok");
             next && next.pass();
         }
     });
@@ -687,10 +626,8 @@ function testArrayTask(next) {
                                                        : task.miss(); },
     ], function(err, buffer) {
         if (err) {
-            console.log("testArrayTask ng");
             next && next.miss();
         } else {
-            console.log("testArrayTask ok");
             next && next.pass();
         }
     });
@@ -708,10 +645,8 @@ function testArrayWithRoute(next) {
                                                       : task.miss(); },
     ], function(err, buffer) {
         if (err) {
-            console.log("testArrayWithRoute ng");
             next && next.miss();
         } else {
-            console.log("testArrayWithRoute ok");
             next && next.pass();
         }
     });
@@ -730,10 +665,8 @@ function testMapWithoutRoute(next) {
                                                               : task.miss(); },
     }, function(err, buffer) {
         if (err) {
-            console.log("testMapWithoutRoute ng");
             next && next.miss();
         } else {
-            console.log("testMapWithoutRoute ok");
             next && next.pass();
         }
     });
@@ -753,10 +686,8 @@ function testArg(next) {
                                                                        : task.miss(); },
     }, function(err, buffer) {
         if (err) {
-            console.log("testArg ng");
             next && next.miss();
         } else {
-            console.log("testArg ok");
             next && next.pass();
         }
     }, { arg: arg });
@@ -767,10 +698,8 @@ function testThrowTask(next) {
 
     function callback(err, buffer) {
         if (err && err.message === errorMessage) {
-            console.log("testThrowTask ok");
             next && next.pass();
         } else {
-            console.error("testThrowTask ng");
             next && next.miss();
         }
     }
@@ -790,10 +719,9 @@ function test500TaskBench(next) {
 
     function callback(err, buffer) {
         if (err) {
-            console.error("test500TaskBench ng");
             next && next.miss();
         } else {
-            console.log("test500TaskBench ok: " + (Date.now() - time));
+            console.log("test500TaskBench: " + (Date.now() - time));
             next && next.pass();
         }
     }
@@ -813,7 +741,7 @@ function test500TaskBench(next) {
 function test500PromiseBench(next) {
 
     function callback() {
-        console.log("test500PromiseBench ok: " + (Date.now() - time));
+        console.log("test500PromiseBench: " + (Date.now() - time));
         next && next.pass();
     }
 
@@ -841,10 +769,8 @@ function testLoopObject(next) {
 
     Task.loop(source, _tick, function(err, buffer) {
         if (err || keys !== "abc" || values !== "123") {
-            console.log("testLoopObject ng");
             next && next.miss();
         } else {
-            console.log("testLoopObject ok");
             next && next.pass();
         }
     });
@@ -865,10 +791,8 @@ function testLoopArray(next) {
 
     Task.loop(source, _tick, function(err, buffer) {
         if (err || keys !== "012" || values !== "e1e2e3") {
-            console.log("testLoopArray ng");
             next && next.miss();
         } else {
-            console.log("testLoopArray ok");
             next && next.pass();
         }
     });
@@ -888,11 +812,11 @@ function testOmitCallback(next) {
         var task2 = Task.run("", {});
         var task3 = Task.loop({}, function(){});
 
-        console.log("testOmitCallback ok");
         next && next.pass();
     } catch (o_O) {
-        console.error("testOmitCallback ng");
         next && next.miss();
     }
 }
+
+})((this || 0).self || global);
 
