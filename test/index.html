@@ -6,7 +6,9 @@
 onmessage = function(event) {
     self.MESSAGE = event.data;
 
+    importScripts(MESSAGE.BASE_DIR + "../node_modules/uupaa.reflection.js/lib/Reflection.js");
     importScripts(MESSAGE.BASE_DIR + "../node_modules/uupaa.console.js/lib/Console.js");
+    importScripts(MESSAGE.BASE_DIR + "../node_modules/uupaa.help.js/lib/Help.js");
     importScripts(MESSAGE.BASE_DIR + "../node_modules/uupaa.valid.js/lib/Valid.js");
     importScripts(MESSAGE.BASE_DIR + "../lib/Task.js");
     importScripts(MESSAGE.BASE_DIR + "../node_modules/uupaa.test.js/lib/Test.js");
@@ -17,8 +19,10 @@ onmessage = function(event) {
 };
 </script>
 
-<script src="../node_modules/uupaa.valid.js/lib/Valid.js"></script>
+<script src="../node_modules/uupaa.reflection.js/lib/Reflection.js"></script>
+<script src="../node_modules/uupaa.console.js/lib/Console.js"></script>
 <script src="../node_modules/uupaa.help.js/lib/Help.js"></script>
+<script src="../node_modules/uupaa.valid.js/lib/Valid.js"></script>
 <script src="../lib/Task.js"></script>
 <script src="../node_modules/uupaa.test.js/lib/Test.js"></script>
 <script src="../release/Task.min.js"></script>
