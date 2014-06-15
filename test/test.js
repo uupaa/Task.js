@@ -59,6 +59,7 @@ var test = new Test("Task", {
 
 return test.run().clone();
 
+/*
 function testPassWithoutArgument(next) {
     var task = new Task(2, callback, { name: "testPassWithoutArgument" });
 
@@ -72,6 +73,29 @@ function testPassWithoutArgument(next) {
             next && next.pass();
         } else {
             next && next.miss();
+        }
+    }
+}
+ */
+function testPassWithoutArgument(next, pass, miss) {
+    var task = new Task(2, callback, { name: "testPassWithoutArgument" });
+
+    task.pass();
+    task.pass(); // -> done
+    task.push("ignore").pass(); // ignore arguments
+
+    function callback(err, buffer) { // buffer = []
+/*
+        if (err === null && buffer.join() === "") {
+            next && next.pass();
+        } else {
+            next && next.miss();
+        }
+ */
+        if (err === null && buffer.join() === "") {
+            next.done(pass());
+        } else {
+            next.done(miss());
         }
     }
 }

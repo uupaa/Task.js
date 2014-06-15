@@ -1,6 +1,6 @@
 {
   "name":           "uupaa.task.js",
-  "version":        "0.8.38",
+  "version":        "0.8.39",
   "description":    "Counter based task executor.",
   "url":            "https://github.com/uupaa/Task.js",
   "keywords":       ["async", "task", "flow", "util", "uupaa", "WebModule", "Stable"],
@@ -21,7 +21,7 @@
     "lint":         "node node_modules/uupaa.plato.js; open lint/plato/index.html"
   },
   "x-build": {
-    "files":        ["lib/Task.js"],
+    "source":       ["lib/Task.js"],
     "output":       "release/Task.min.js",
     "target":       ["all"],
     "labels":       ["@dev"],

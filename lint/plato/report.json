@@ -8,56 +8,56 @@
         "link": "files/lib_Task_js/index.html"
       },
       "jshint": {
-        "messages": 1
+        "messages": 0
       },
       "complexity": {
         "aggregate": {
-          "line": 5,
+          "line": 1,
           "complexity": {
             "sloc": {
-              "physical": 483,
-              "logical": 251
+              "physical": 457,
+              "logical": 248
             },
-            "cyclomatic": 56,
+            "cyclomatic": 53,
             "halstead": {
               "operators": {
                 "distinct": 37,
-                "total": 663,
+                "total": 599,
                 "identifiers": [
                   "__stripped__"
                 ]
               },
               "operands": {
-                "distinct": 206,
-                "total": 857,
+                "distinct": 193,
+                "total": 829,
                 "identifiers": [
                   "__stripped__"
                 ]
               },
-              "length": 1520,
-              "vocabulary": 243,
-              "difficulty": 76.9635922330097,
-              "volume": 12045.715005480788,
-              "effort": 927081.4978368697,
-              "bugs": 4.015238335160262,
-              "time": 51504.527657603874
+              "length": 1428,
+              "vocabulary": 230,
+              "difficulty": 79.46373056994818,
+              "volume": 11203.359792748568,
+              "effort": 890260.7640491627,
+              "bugs": 3.7344532642495225,
+              "time": 49458.9313360646
             },
-            "params": 44
+            "params": 48
           }
         },
         "module": "lib/Task.js",
-        "maintainability": 65.39062464032023
+        "maintainability": 66.37084120222997
       }
     }
   ],
   "summary": {
     "total": {
-      "sloc": 483,
-      "maintainability": 65.39062464032023
+      "sloc": 457,
+      "maintainability": 66.37084120222997
     },
     "average": {
-      "sloc": 483,
-      "maintainability": "65.39"
+      "sloc": 457,
+      "maintainability": "66.37"
     }
   }
 }
