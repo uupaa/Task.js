@@ -158,19 +158,19 @@ function testExecuteSyncAndAsyncTask(test, pass, miss) { // task sync 4 events
 
     // sync task
     [1,2,3].forEach(function(value) {
-        console.log("testExecuteSyncAndAsyncTask: " + value);
+        //console.log("testExecuteSyncAndAsyncTask: " + value);
         task.push(value).pass();
     });
 
     // async task
     setTimeout(function() {
-        console.log("testExecuteSyncAndAsyncTask: " + 4);
+        //console.log("testExecuteSyncAndAsyncTask: " + 4);
         task.push(4).pass();
     }, 100);
 
     setTimeout(function() {
         if (!task.isFinished()) {
-            console.log("testExecuteSyncAndAsyncTask: " + "timeout");
+            //console.log("testExecuteSyncAndAsyncTask: " + "timeout");
             task.miss();
         }
     }, 1000);
@@ -187,15 +187,28 @@ function testExecuteSyncAndAsyncTask(test, pass, miss) { // task sync 4 events
 function testMissable(test, pass, miss) {
     var task = new Task(4, callback, { name: "testMissable" }).missable(2);
 
-    setTimeout(function() { task.push(1).pass(); }, Math.random() * 10);
-    setTimeout(function() { task.push(2).pass(); }, Math.random() * 10);
-    setTimeout(function() { task.push(3).pass(); }, Math.random() * 10);
-    setTimeout(function() { task.push(4).miss(); }, Math.random() * 10);
-    setTimeout(function() { task.push(5).miss(); }, Math.random() * 10);
-    setTimeout(function() { task.push(6).pass(); }, Math.random() * 10);
+    var time1 = Math.random() * 10;
+    var time2 = Math.random() * 10;
+    var time3 = Math.random() * 10;
+    var time4 = Math.random() * 10;
+    var time5 = Math.random() * 10;
+    var time6 = Math.random() * 10;
+
+
+    setTimeout(function() { task.push(1).pass(); }, time1);
+    setTimeout(function() { task.push(2).pass(); }, time2);
+    setTimeout(function() { task.push(3).pass(); }, time3);
+    setTimeout(function() { task.push(4).miss(); }, time4);
+    setTimeout(function() { task.push(5).miss(); }, time5);
+    setTimeout(function() { task.push(6).pass(); }, time6);
+
+    // watch dog timer
+    setTimeout(function() { task.exit(); }, 1000 * 10); // 10sec
 
     function callback(err, buffer) {
         if (err) {
+            console.log("testMissable times: ", time1, time2, time3, time4, time5, time6);
+            console.log( JSON.stringify(Task.dump("testMissable"), null, 2) );
             test.done(miss());
         } else {
             test.done(pass());
