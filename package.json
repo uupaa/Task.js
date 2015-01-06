@@ -1,30 +1,22 @@
 {
   "name": "uupaa.task.js",
-  "version": "0.8.47",
+  "version": "0.8.48",
   "description": "Counter based task executor.",
   "url": "https://github.com/uupaa/Task.js",
-  "keywords": [
-    "async",
-    "task",
-    "flow",
-    "util",
-    "uupaa",
-    "WebModule",
-    "Stable"
-  ],
+  "keywords": ["async", "task", "flow", "util", "uupaa", "WebModule", "Stable"],
   "repository": {
     "type": "git",
     "url": "https://github.com/uupaa/Task.js.git"
   },
   "scripts": {
     "sync": "node ../WebModule/run/sync.js; npm update; node ../WebModule/run/page.js",
-    "watch": "node ../WebModule/run/watch.js --verbose --action minify",
-    "minify": "node ../WebModule/run/minify.js --verbose --strict --keep --pretty",
-    "build": "node ../WebModule/run/minify.js --verbose --strict --module",
+    "min": "node ../WebModule/run/minify.js --verbose --strict --keep --pretty",
+    "build": "node ../WebModule/run/minify.js --verbose --strict --keep --module",
+    "watch": "node ../WebModule/run/watch.js --verbose --run hint",
     "page": "node ../WebModule/run/page.js --verbose",
-    "test": "npm run minify; npm run node; npm run browser",
-    "node": "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js",
-    "noded": "NODE_ENV=production NODE_PATH=lib node --debug-brk --harmony test/index.node.js",
+    "test": "npm run min; npm run node; npm run browser",
+    "node": "NODE_ENV=production NODE_PATH=lib node --harmony test/node.js",
+    "noded": "NODE_ENV=production NODE_PATH=lib node --debug-brk --harmony test/node.js",
     "browser": "open http://localhost:8000/Task.js/test/index.html",
     "sim": "node ../WebModule/run/sim.js http://localhost:8000/Task.js/test/index.html",
     "simx": "node ../WebModule/run/sim.js stop",
@@ -36,16 +28,24 @@
     "stop": "killall -- Python -m SimpleHTTPServer 8000; exit 0"
   },
   "webmodule": {
-    "source": [
-      "lib/Task.js"
-    ],
-    "output": "release/Task.min.js",
-    "target": [
-      "all"
-    ],
-    "label": [
-      "@dev"
-    ]
+    "develop": false,
+    "label": ["@dev"],
+    "browser": {
+      "source": ["lib/Task.js"],
+      "output": "release/Task.b.min.js"
+    },
+    "worker": {
+      "source": ["lib/Task.js"],
+      "output": "release/Task.w.min.js"
+    },
+    "node": {
+      "source": ["lib/Task.js"],
+      "output": "release/Task.n.min.js"
+    },
+    "nw": {
+      "source": ["lib/Task.js"],
+      "output": "release/Task.nw.min.js"
+    }
   },
   "dependencies": {},
   "devDependencies": {},

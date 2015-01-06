@@ -15,16 +15,6 @@ Counter based task executor.
 
 ## How to use
 
-### Node.js
-```js
-var Task = require("uupaa.task.js");
-var task = new Task(2, function(err) {
-    console.log("task done");
-});
-task.pass();
-task.pass();
-```
-
 ### Browser
 
 ```js
@@ -38,15 +28,21 @@ task.pass();
 </script>
 ```
 
+### Node.js
+```js
+require("lib/Task.js");
+```
+
+
 ### WebWorkers
 
 ```js
 importScripts("lib/Task.js");
+```
 
-var task = new Task(2, function(err) {
-    console.log("task done");
-});
-task.pass();
-task.pass();
+### node-webkit
+
+```js
+require("lib/Task.js");
 ```
 
