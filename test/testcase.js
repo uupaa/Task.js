@@ -25,6 +25,7 @@ var test = new Test("Task", {
         testMessageFromString,
         testMessageFromError,
         testBufferKeyAccess,
+        testBufferPushPopShiftUnshift,
         testFinisedAndFailureMessage,
         testJunctionSuccess,
         testJunctionFail,
@@ -312,6 +313,38 @@ function testBufferKeyAccess(test, pass, miss) {
     task4.set("key1", "value1").pass(); // { key1: "value1" }
     task4.set("key2", "value2").pass(); // { key2: "value2" }
     task4.push("value0").pass();
+}
+
+function testBufferPushPopShiftUnshift(test, pass, miss) {
+    var task5 = new Task(1, function(err, buffer) {
+            var buf = buffer;
+
+            if (buf.length === 4 &&
+                buf[0] === 5 &&
+                buf[1] === 4 &&
+                buf[2] === 2 &&
+                buf[3] === 3) {
+
+                test.done(pass());
+            } else {
+                test.done(miss());
+            }
+        }, { name: "testBufferKeyAccess" });
+
+    task5.push(0);      // []      -> [0]
+    task5.pop();        // [0]     -> []
+    task5.unshift(1);   // []      -> [1]
+    task5.shift();      // [1]     -> []
+    task5.push(2);      // []      -> [2]
+    task5.push(3);      // [2]     -> [2,3]
+    task5.unshift(4);   // [2,3]   -> [4,2,3]
+    task5.unshift(5);   // [4,2,3] -> [5,4,2,3]
+
+    if (task5.buffer().join() === "5,4,2,3") {
+        task5.pass();
+    } else {
+        task5.miss();
+    }
 }
 
 function testFinisedAndFailureMessage(test, pass, miss) {
