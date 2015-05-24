@@ -7,15 +7,13 @@ Counter based task executor.
 ## Document
 
 - [Task.js wiki](https://github.com/uupaa/Task.js/wiki/Task) ([Slide](http://uupaa.github.io/Slide/slide/Task.js/index.html))
-- [Development](https://github.com/uupaa/WebModule/wiki/Development)
 - [WebModule](https://github.com/uupaa/WebModule)
     - [Slide](http://uupaa.github.io/Slide/slide/WebModule/index.html)
     - [Development](https://github.com/uupaa/WebModule/wiki/Development)
 
+## Run on
 
-## How to use
-
-### Browser
+### Browser and node-webkit
 
 ```js
 <script src="lib/Task.js"></script>
@@ -28,21 +26,17 @@ task.pass();
 </script>
 ```
 
-### Node.js
-```js
-require("lib/Task.js");
-```
-
-
 ### WebWorkers
 
 ```js
 importScripts("lib/Task.js");
+
 ```
 
-### node-webkit
+### Node.js
 
 ```js
 require("lib/Task.js");
+
 ```
 

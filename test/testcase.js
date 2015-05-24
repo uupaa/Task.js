@@ -1,19 +1,20 @@
 var ModuleTestTask = (function(global) {
 
-//var _isNodeOrNodeWebKit = !!global.global;
-//var _runOnNodeWebKit =  _isNodeOrNodeWebKit && /native/.test(setTimeout);
-//var _runOnNode       =  _isNodeOrNodeWebKit && !/native/.test(setTimeout);
-//var _runOnWorker     = !_isNodeOrNodeWebKit && "WorkerLocation" in global;
-//var _runOnBrowser    = !_isNodeOrNodeWebKit && "document" in global;
+global["BENCHMARK"] = false;
 
 var test = new Test("Task", {
-        disable:    false,
-        browser:    true,
-        worker:     true,
-        node:       true,
-        nw:         true,
-        button:     true,
-        both:       true,
+        disable:    false, // disable all tests.
+        browser:    true,  // enable browser test.
+        worker:     true,  // enable worker test.
+        node:       true,  // enable node test.
+        nw:         true,  // enable nw.js test.
+        button:     true,  // show button.
+        both:       true,  // test the primary and secondary modules.
+        ignoreError:false, // ignore error.
+        callback:   function() {
+        },
+        errorback:  function(error) {
+        }
     }).add([
         // --- Task ---
         testPassWithoutArgument,
@@ -67,8 +68,7 @@ var test = new Test("Task", {
     }
     test.add([ test500TaskBench ]);
 
-return test.run().clone();
-
+// --- test cases ------------------------------------------
 /*
 function testPassWithoutArgument(test, pass, miss) {
     var task = new Task(2, callback, { name: "testPassWithoutArgument" });
@@ -920,5 +920,7 @@ function testClosureFunction(test, pass, miss) {
     passfn();
 }
 
-})((this || 0).self || global);
+return test.run();
+
+})(GLOBAL);
 
