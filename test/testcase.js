@@ -60,18 +60,32 @@ var test = new Test("Task", {
         testClosureFunction,
     ]);
 
-    if (this["XMLHttpRequest"]) {
-        test.add([ testMissableRecover ]);
-    }
-    if (this["Promise"]) {
-        test.add([ test500PromiseBench ]);
-    }
-    test.add([ test500TaskBench ]);
+if (IN_BROWSER || IN_NW) {
+    test.add([
+        // browser and node-webkit test
+    ]);
+} else if (IN_WORKER) {
+    test.add([
+        // worker test
+    ]);
+} else if (IN_NODE) {
+    test.add([
+        // node.js and io.js test
+    ]);
+}
+
+if (this["XMLHttpRequest"]) {
+    test.add([ testMissableRecover ]);
+}
+if (this["Promise"]) {
+    test.add([ test500PromiseBench ]);
+}
+test.add([ test500TaskBench ]);
 
 // --- test cases ------------------------------------------
 /*
 function testPassWithoutArgument(test, pass, miss) {
-    var task = new Task(2, callback, { name: "testPassWithoutArgument" });
+    var task = new WebModule.Task(2, callback, { name: "testPassWithoutArgument" });
 
     task.pass();
     task.pass(); // -> done
@@ -88,7 +102,7 @@ function testPassWithoutArgument(test, pass, miss) {
 }
  */
 function testPassWithoutArgument(test, pass, miss) {
-    var task = new Task(2, callback, { name: "testPassWithoutArgument" });
+    var task = new WebModule.Task(2, callback, { name: "testPassWithoutArgument" });
 
     task.pass();
     task.pass(); // -> done
@@ -104,7 +118,7 @@ function testPassWithoutArgument(test, pass, miss) {
 }
 
 function testMissWithoutArgument(test, pass, miss) {
-    var task = new Task(2, callback, { name: "testMissWithoutArgument" });
+    var task = new WebModule.Task(2, callback, { name: "testMissWithoutArgument" });
 
     task.miss();
     task.miss(); // -> done
@@ -121,7 +135,7 @@ function testMissWithoutArgument(test, pass, miss) {
 }
 
 function testExitWithoutArgument(test, pass, miss) {
-    var task = new Task(2, callback, { name: "testExitWithoutArgument" });
+    var task = new WebModule.Task(2, callback, { name: "testExitWithoutArgument" });
 
     task.exit(); // -> done
     task.push("ignore").pass(); // ignore arguments
@@ -137,7 +151,7 @@ function testExitWithoutArgument(test, pass, miss) {
 }
 
 function testPassWithObjectKey(test, pass, miss) {
-    var task = new Task(4, callback, { name: "testPassWithObjectKey" });
+    var task = new WebModule.Task(4, callback, { name: "testPassWithObjectKey" });
 
     task.push(0).pass();
     task.set("one", 1).pass();
@@ -146,8 +160,8 @@ function testPassWithObjectKey(test, pass, miss) {
 
     function callback(err, buffer) { // buffer = [0, 3] + { one: 1, two: 2 },
 
-        var flattenValues = Task.arraynize(buffer); // [0, 3]
-        var buffer_left = JSON.stringify(Task.objectize(buffer)); // { "0": 0, "1": 3, "one": 1, "two": 2 }
+        var flattenValues = WebModule.Task.arraynize(buffer); // [0, 3]
+        var buffer_left = JSON.stringify(WebModule.Task.objectize(buffer)); // { "0": 0, "1": 3, "one": 1, "two": 2 }
 
         if (err === null &&
             flattenValues.join() === [0, 3].join() &&
@@ -161,7 +175,7 @@ function testPassWithObjectKey(test, pass, miss) {
 }
 
 function testExecuteSyncAndAsyncTask(test, pass, miss) { // task sync 4 events
-    var task = new Task(4, callback, { name: "testExecuteSyncAndAsyncTask" });
+    var task = new WebModule.Task(4, callback, { name: "testExecuteSyncAndAsyncTask" });
     var testResult = [1, 2, 3, 4];
 
     // sync task
@@ -193,7 +207,7 @@ function testExecuteSyncAndAsyncTask(test, pass, miss) { // task sync 4 events
 }
 
 function testMissable(test, pass, miss) {
-    var task = new Task(4, callback, { name: "testMissable" }).missable(2);
+    var task = new WebModule.Task(4, callback, { name: "testMissable" }).missable(2);
 
     var time1 = Math.random() * 10;
     var time2 = Math.random() * 10;
@@ -216,7 +230,7 @@ function testMissable(test, pass, miss) {
     function callback(err, buffer) {
         if (err) {
             console.log("testMissable times: ", time1, time2, time3, time4, time5, time6);
-            console.log( JSON.stringify(Task.dump("testMissable"), null, 2) );
+            console.log( JSON.stringify(WebModule.Task.dump("testMissable"), null, 2) );
             test.done(miss());
         } else {
             test.done(pass());
@@ -225,7 +239,7 @@ function testMissable(test, pass, miss) {
 }
 
 function testMissableRecover(test, pass, miss) {
-    var task = new Task(1, callback, { name: "testMissableRecover" }).missable(2);
+    var task = new WebModule.Task(1, callback, { name: "testMissableRecover" }).missable(2);
 
     download(["http://cdn1.example.com/image.png",
               "http://cdn2.example.com/image.png",
@@ -264,7 +278,7 @@ function testMissableRecover(test, pass, miss) {
 }
 
 function testMessageFromString(test, pass, miss) {
-    var task = new Task(1, callback);
+    var task = new WebModule.Task(1, callback);
     var error = new TypeError("O_o");
 
     task.message(error.message);
@@ -280,7 +294,7 @@ function testMessageFromString(test, pass, miss) {
 }
 
 function testMessageFromError(test, pass, miss) {
-    var task = new Task(1, callback);
+    var task = new WebModule.Task(1, callback);
     var error = new TypeError("O_o");
 
     task.message(error);
@@ -296,7 +310,7 @@ function testMessageFromError(test, pass, miss) {
 }
 
 function testBufferKeyAccess(test, pass, miss) {
-    var task4 = new Task(3, function(err, buffer) { // ["value0"] + { key1: "value1", key2: "value2" }
+    var task4 = new WebModule.Task(3, function(err, buffer) { // ["value0"] + { key1: "value1", key2: "value2" }
             var buf = buffer;
 
             if (buf[0] === "value0" &&
@@ -316,7 +330,7 @@ function testBufferKeyAccess(test, pass, miss) {
 }
 
 function testBufferPushPopShiftUnshift(test, pass, miss) {
-    var task5 = new Task(1, function(err, buffer) {
+    var task5 = new WebModule.Task(1, function(err, buffer) {
             var buf = buffer;
 
             if (buf.length === 4 &&
@@ -348,8 +362,8 @@ function testBufferPushPopShiftUnshift(test, pass, miss) {
 }
 
 function testFinisedAndFailureMessage(test, pass, miss) {
-    var task = new Task(1, function(err,    // Error("fail reason")
-                                    buffer) { // ["value"] + { key: "value" }
+    var task = new WebModule.Task(1, function(err,    // Error("fail reason")
+                                              buffer) { // ["value"] + { key: "value" }
             if (err && err.message === "fail reason") {
                 test.done(pass());
             } else {
@@ -363,7 +377,7 @@ function testFinisedAndFailureMessage(test, pass, miss) {
 }
 
 function testJunctionSuccess(test, pass, miss) {
-    var junction = new Task(2, function(err, buffer) {
+    var junction = new WebModule.Task(2, function(err, buffer) {
             if (!err) {
                 test.done(pass());
             } else {
@@ -371,8 +385,8 @@ function testJunctionSuccess(test, pass, miss) {
             }
         }, { name: "testJunctionSuccess" });
 
-    var task1 = new Task(2, junction);
-    var task2 = new Task(2, junction);
+    var task1 = new WebModule.Task(2, junction);
+    var task2 = new WebModule.Task(2, junction);
 
     setTimeout(function() { task1.pass(); }, Math.random() * 1000);
     setTimeout(function() { task1.pass(); }, Math.random() * 1000);
@@ -381,7 +395,7 @@ function testJunctionSuccess(test, pass, miss) {
 }
 
 function testJunctionFail(test, pass, miss) {
-    var junction = new Task(2, function(err) {
+    var junction = new WebModule.Task(2, function(err) {
             if (err) {
                 test.done(pass());
             } else {
@@ -389,8 +403,8 @@ function testJunctionFail(test, pass, miss) {
             }
         });
 
-    var task1 = new Task(2, junction);
-    var task2 = new Task(2, junction);
+    var task1 = new WebModule.Task(2, junction);
+    var task2 = new WebModule.Task(2, junction);
 
     setTimeout(function() { task1.pass(); }, Math.random() * 1000);
     setTimeout(function() { task1.miss(); }, Math.random() * 1000);
@@ -410,9 +424,9 @@ function testJunctionWithSelfSharedBuffer(test, pass, miss) {
 
     var taskBuffer = [];
 
-    var junction = new Task(2, callback, { buffer: taskBuffer });
-    var task1    = new Task(2, junction, { buffer: taskBuffer });
-    var task2    = new Task(2, junction, { buffer: taskBuffer });
+    var junction = new WebModule.Task(2, callback, { buffer: taskBuffer });
+    var task1    = new WebModule.Task(2, junction, { buffer: taskBuffer });
+    var task2    = new WebModule.Task(2, junction, { buffer: taskBuffer });
 
     setTimeout(function() { task1.push(1).pass(); }, Math.random() * 1000);
     setTimeout(function() { task1.push(2).pass(); }, Math.random() * 1000);
@@ -430,9 +444,9 @@ function testJunctionWithSharedBuffer(test, pass, miss) {
         }
     }
 
-    var junction = new Task(2, callback);
-    var task1    = new Task(2, junction);
-    var task2    = new Task(2, junction);
+    var junction = new WebModule.Task(2, callback);
+    var task1    = new WebModule.Task(2, junction);
+    var task2    = new WebModule.Task(2, junction);
 
     setTimeout(function() { task1.push(1).pass(); }, Math.random() * 1000);
     setTimeout(function() { task1.push(2).pass(); }, Math.random() * 1000);
@@ -452,15 +466,15 @@ function testJunctionWithSharedBuffer2(test, pass, miss) {
     }
 
   //var taskBuffer = [];
-  //var junction = new Task(2, callback, { buffer: taskBuffer });
-    var junction = new Task(2, callback);
+  //var junction = new WebModule.Task(2, callback, { buffer: taskBuffer });
+    var junction = new WebModule.Task(2, callback);
 
     junction.push("SHARE PAYLOAD");
 
-  //var task1 = new Task(2, junction, { buffer: taskBuffer });
-  //var task2 = new Task(2, junction, { buffer: taskBuffer });
-    var task1 = new Task(2, junction);
-    var task2 = new Task(2, junction);
+  //var task1 = new WebModule.Task(2, junction, { buffer: taskBuffer });
+  //var task2 = new WebModule.Task(2, junction, { buffer: taskBuffer });
+    var task1 = new WebModule.Task(2, junction);
+    var task2 = new WebModule.Task(2, junction);
 
     task1.push(1.1).set("a", 1).pass();
     task1.push(2.2).set("b", 2).pass();
@@ -478,9 +492,9 @@ function testCallback3rdArgIsTaskInstance(test, pass, miss) {
             test.done(miss());
         }
     }
-    var junction = new Task(2, callback);
-    var task1 = new Task(1, junction);
-    var task2 = new Task(1, junction);
+    var junction = new WebModule.Task(2, callback);
+    var task1 = new WebModule.Task(1, junction);
+    var task2 = new WebModule.Task(1, junction);
 
     task1.pass();
     task2.pass();
@@ -491,13 +505,13 @@ function testDump(test, pass, miss) {
     function callback(err, buffer) {
     }
 
-    Task.drop();
+    WebModule.Task.drop();
 
-    var task1 = new Task(1, callback, { name: "task1" });
-    var task2 = new Task(1, callback, { name: "task1" });
-    var task3 = new Task(1, callback, { name: "task1" });
+    var task1 = new WebModule.Task(1, callback, { name: "task1" });
+    var task2 = new WebModule.Task(1, callback, { name: "task1" });
+    var task3 = new WebModule.Task(1, callback, { name: "task1" });
 
-    var result = Task.dump("task1");
+    var result = WebModule.Task.dump("task1");
 
     if (Object.keys(result).length === 3) {
         var r = result[Object.keys(result)[0]];
@@ -520,12 +534,12 @@ function testDumpAll(test, pass, miss) {
     function callback(err, buffer) {
     }
 
-    Task.drop();
-    var task1 = new Task(1, callback, { name: "task1" });
-    var task2 = new Task(1, callback, { name: "task1" });
-    var task3 = new Task(1, callback, { name: "task1" });
+    WebModule.Task.drop();
+    var task1 = new WebModule.Task(1, callback, { name: "task1" });
+    var task2 = new WebModule.Task(1, callback, { name: "task1" });
+    var task3 = new WebModule.Task(1, callback, { name: "task1" });
 
-    var result = Task.dump();
+    var result = WebModule.Task.dump();
 
     if (Object.keys(result).length === 3) {
         test.done(pass());
@@ -537,11 +551,11 @@ function testDumpAll(test, pass, miss) {
 function testDumpMissMatch(test, pass, miss) {
     function callback(err, buffer) {
     }
-    var task1 = new Task(1, callback, { name: "task1" });
-    var task2 = new Task(1, callback, { name: "task1" });
-    var task3 = new Task(1, callback, { name: "task1" });
+    var task1 = new WebModule.Task(1, callback, { name: "task1" });
+    var task2 = new WebModule.Task(1, callback, { name: "task1" });
+    var task3 = new WebModule.Task(1, callback, { name: "task1" });
 
-    var result = Task.dump("task2");
+    var result = WebModule.Task.dump("task2");
 
     if (!Object.keys(result).length) {
         test.done(pass());
@@ -553,12 +567,12 @@ function testDumpMissMatch(test, pass, miss) {
 function testDrop(test, pass, miss) {
     function callback(err, buffer) {
     }
-    var task1 = new Task(1, callback, { name: "task1" });
-    var task2 = new Task(1, callback, { name: "task1" });
-    var task3 = new Task(1, callback, { name: "task1" });
+    var task1 = new WebModule.Task(1, callback, { name: "task1" });
+    var task2 = new WebModule.Task(1, callback, { name: "task1" });
+    var task3 = new WebModule.Task(1, callback, { name: "task1" });
 
-    Task.drop();
-    var result = Task.dump("task2");
+    WebModule.Task.drop();
+    var result = WebModule.Task.dump("task2");
 
     if (!Object.keys(result).length) {
         test.done(pass());
@@ -575,7 +589,7 @@ function testZeroTaskCount(test, pass, miss) {
             test.done(miss());
         }
     }
-    var task1 = new Task(0, callback);
+    var task1 = new WebModule.Task(0, callback);
 }
 
 function testSharedBuffer(test, pass, miss) {
@@ -584,21 +598,21 @@ function testSharedBuffer(test, pass, miss) {
             task2: function(task) { task.push("value2");       task.pass(); },
         };
 
-    var junction = new Task(2, function(err, buffer, junction) {
-            if (Task.flatten(buffer).join() === "value2,value2") {
+    var junction = new WebModule.Task(2, function(err, buffer, junction) {
+            if (WebModule.Task.flatten(buffer).join() === "value2,value2") {
                 test.done(pass());
             } else {
                 test.done(miss());
             }
         });
 
-    Task.run("task1 > 1000 > task2", taskMap, junction);
-    Task.run("task1 > task2 > 1000", taskMap, junction);
+    WebModule.Task.run("task1 > 1000 > task2", taskMap, junction);
+    WebModule.Task.run("task1 > task2 > 1000", taskMap, junction);
 }
 
 function testNoTask(test, pass, miss) {
     try {
-        Task.run(" > ", {
+        WebModule.Task.run(" > ", {
 
         }, function() {
         });
@@ -611,7 +625,7 @@ function testNoTask(test, pass, miss) {
 
 function testTaskCancel(test, pass, miss) {
 
-    var task = Task.run("1000 > 1000 > 1000", {
+    var task = WebModule.Task.run("1000 > 1000 > 1000", {
 
     }, function(err, buffer) {
         if (err && err.message === "exit task") { // exit task
@@ -631,7 +645,7 @@ function testBasicFunction(test, pass, miss) {
 
     var route = "";
 
-    Task.run("task_a > task_b > task_c", {
+    WebModule.Task.run("task_a > task_b > task_c", {
         task_a: function(task) { route += "a"; task.pass(); },
         task_b: function(task) { route += "b"; route === "ab" ? task.pass()
                                                               : task.miss(); },
@@ -650,7 +664,7 @@ function testParallelExecution(test, pass, miss) {
 
     var route = "";
 
-    Task.run("task_a > task_b + task_c + task_d > task_e", {
+    WebModule.Task.run("task_a > task_b + task_c + task_d > task_e", {
         task_a: function(task) { route += "a"; task.pass(); },
         task_b: function(task) { route += "b"; /[a]/.test(route) ? task.pass()
                                                                  : task.miss(); },
@@ -674,7 +688,7 @@ function testDelay(test, pass, miss) {
     var route = "";
     var last = 0;
 
-    Task.run("task_a > 1000 > task_b", {
+    WebModule.Task.run("task_a > 1000 > task_b", {
         task_a: function(task) { last = Date.now(); task.pass(); },
         task_b: function(task) { Date.now() - last ? task.pass() : task.miss() },
     }, function(err, buffer) {
@@ -688,7 +702,7 @@ function testDelay(test, pass, miss) {
 
 function testZeroDelay(test, pass, miss) {
 
-    Task.run("0 > 0 > 0", {
+    WebModule.Task.run("0 > 0 > 0", {
 
     }, function(err, buffer) {
         if (err) {
@@ -703,7 +717,7 @@ function testArrayTask(test, pass, miss) {
 
     var route = "";
 
-    Task.run("", [
+    WebModule.Task.run("", [
         function(task) { route += "a"; task.pass(); },
         function(task) { route += "b"; route === "ab" ? task.pass()
                                                       : task.miss(); },
@@ -722,7 +736,7 @@ function testArrayWithRoute(test, pass, miss) {
 
     var route = "";
 
-    Task.run("0 > 2 > 1", [
+    WebModule.Task.run("0 > 2 > 1", [
         function(task) { route += "a"; task.pass(); },
         function(task) { route += "b"; route === "acb" ? task.pass()
                                                        : task.miss(); },
@@ -742,7 +756,7 @@ function testMapWithoutRoute(test, pass, miss) {
 
     var route = "";
 
-    Task.run("task_a > task_c > task_b", {
+    WebModule.Task.run("task_a > task_c > task_b", {
         task_a: function(task) { route += "a"; task.pass(); },
         task_b: function(task) { route += "b"; route === "acb" ? task.pass()
                                                                : task.miss(); },
@@ -763,7 +777,7 @@ function testArg(test, pass, miss) {
     var arg = { a: 1, b: 2, c: 3 };
     var route = "";
 
-    Task.run("task_a > task_c > task_b", {
+    WebModule.Task.run("task_a > task_c > task_b", {
         task_a: function(task, arg) { route += arg.a; task.pass(); },
         task_b: function(task, arg) { route += arg.b; route === "132" ? task.pass()
                                                                         : task.miss(); },
@@ -789,7 +803,7 @@ function testThrowTask(test, pass, miss) {
         }
     }
 
-    Task.run("task_a > task_b", {
+    WebModule.Task.run("task_a > task_b", {
         task_a: function(task) {
             throw new TypeError(errorMessage);
         },
@@ -820,7 +834,7 @@ function test500TaskBench(test, pass, miss) {
 
     var time = Date.now();
 
-    Task.run("", taskMap, callback);
+    WebModule.Task.run("", taskMap, callback);
 }
 
 function test500PromiseBench(test, pass, miss) {
@@ -852,7 +866,7 @@ function testLoopObject(test, pass, miss) {
     var keys = "";
     var values = "";
 
-    Task.loop(source, _tick, function(err, buffer) {
+    WebModule.Task.loop(source, _tick, function(err, buffer) {
         if (err || keys !== "abc" || values !== "123") {
             test.done(miss());
         } else {
@@ -874,7 +888,7 @@ function testLoopArray(test, pass, miss) {
     var keys = "";
     var values = "";
 
-    Task.loop(source, _tick, function(err, buffer) {
+    WebModule.Task.loop(source, _tick, function(err, buffer) {
         if (err || keys !== "012" || values !== "e1e2e3") {
             test.done(miss());
         } else {
@@ -893,9 +907,9 @@ function testLoopArray(test, pass, miss) {
 function testOmitCallback(test, pass, miss) {
 
     try {
-        var task1 = new Task(1);
-        var task2 = Task.run("", {});
-        var task3 = Task.loop({}, function(){});
+        var task1 = new WebModule.Task(1);
+        var task2 = WebModule.Task.run("", {});
+        var task3 = WebModule.Task.loop({}, function(){});
 
         test.done(pass());
     } catch (o_O) {
@@ -904,7 +918,7 @@ function testOmitCallback(test, pass, miss) {
 }
 
 function testClosureFunction(test, pass, miss) {
-    var task = new Task(2, function(error) {
+    var task = new WebModule.Task(2, function(error) {
                 if (error) {
                     test.done(miss());
                 } else {
