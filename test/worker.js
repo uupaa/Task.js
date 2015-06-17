@@ -14,7 +14,7 @@ onmessage = function(event) {
 
     importScripts("../lib/WebModule.js");
 
-    
+    importScripts("../node_modules/uupaa.es.js/lib/ES.js");
     importScripts("wmtools.js");
     importScripts("../lib/Task.js");
     importScripts("../release/Task.w.min.js");
