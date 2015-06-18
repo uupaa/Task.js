@@ -30,7 +30,7 @@
   },
   "webmodule": {
     "develop": false,
-    "label": ["@dev"],
+    "label": ["@dev", "@taskmap"],
     "browser": {
       "source": ["lib/Task.js", "lib/TaskMap.js"],
       "output": "release/Task.b.min.js"
