@@ -46,17 +46,6 @@ WebModule.TaskMap("MyTaskMap", "a > 1000 > b + c > d", {
     }, taskArg);
 
 
-// --- avoid busy loop ---
-var bigArray = ["a", "b", "c", ... "zy", "zz"];
-var taskMap = WebModule.TaskMap.fromArray(bigArray, function(task, key, source) {
-                console.log(key, source[key]); // "0 a", ... "676 zz"
-                task.pass();
-            });
-
-WebModule.TaskMap.run("BigArrayLoop", taskMap, function(error, buffer) {
-        ...
-    });
-
 </script>
 ```
 

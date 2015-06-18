@@ -53,15 +53,12 @@ var test = new Test("Task", {
         testMapWithoutRoute,
         testArg,
         testThrowTask,
-        testLoopObject,
-        testLoopArray,
         // --- TaskPassFunction, TaskMissFunction ---
         testClosureFunction,
         // --- README.md ---
         testREADME1,
         testREADME2,
         testREADME3,
-        testREADME4,
     ]);
 
 if (IN_BROWSER || IN_NW) {
@@ -819,53 +816,6 @@ function test500PromiseBench(test, pass, miss) {
     Promise.all(taskMap).then(callback);
 }
 
-function testLoopObject(test, pass, miss) {
-
-    var source = { a: 1, b: 2, c: 3 };
-    var keys = "";
-    var values = "";
-
-    var taskMap = TaskMap.fromArray(source, _tick);
-
-    TaskMap.run("testLoopObject", taskMap, function(err, buffer) {
-        if (err || keys !== "abc" || values !== "123") {
-            test.done(miss());
-        } else {
-            test.done(pass());
-        }
-    });
-
-    function _tick(task, key, source) {
-        keys   += key;
-        values += source[key];
-
-        task.pass();
-    }
-}
-
-function testLoopArray(test, pass, miss) {
-
-    var source = ["e1", "e2", "e3"];
-    var keys = "";
-    var values = "";
-    var taskMap = TaskMap.fromArray(source, _tick);
-
-    TaskMap.run("testLoopArray", taskMap, function(err, buffer) {
-        if (err || keys !== "012" || values !== "e1e2e3") {
-            test.done(miss());
-        } else {
-            test.done(pass());
-        }
-    });
-
-    function _tick(task, key, source) {
-        keys   += key;
-        values += source[key];
-
-        task.pass();
-    }
-}
-
 function testClosureFunction(test, pass, miss) {
     var task = new Task("testClosureFunction", 2, function(error) {
                 if (error) {
@@ -877,8 +827,12 @@ function testClosureFunction(test, pass, miss) {
 
     task.missable = 1;
 
+/*
     var passfn = task.passfn();
     var missfn = task.missfn();
+ */
+    var passfn = task.passfn;
+    var missfn = task.missfn;
 
     missfn();
     passfn();
@@ -929,19 +883,6 @@ function testREADME3(test, pass, miss) {
             console.log(buffer.join()); // "red,green,blue,black"
             test.done(pass());
         }, taskArg);
-}
-
-function testREADME4(test, pass, miss) {
-    var bigArray = ["a", "b", "c", "zy", "zz"];
-    var taskMap = TaskMap.fromArray(bigArray, function(task, key, source) {
-                    console.log(key, source[key]); // "0 a", ... "676 zz"
-                    task.pass();
-
-                });
-
-    TaskMap.run("BigArrayLoop", taskMap, function(error, buffer) {
-            test.done(pass());
-        });
 }
 
 return test.run();
