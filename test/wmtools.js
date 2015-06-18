@@ -1531,6 +1531,8 @@ var ERR  = "\u001b[31m";
 var WARN = "\u001b[33m";
 var INFO = "\u001b[32m";
 var CLR  = "\u001b[0m";
+var GHOST = "\uD83D\uDC7B";
+var BEER  = "\uD83C\uDF7B";
 
 // --- class / interfaces ----------------------------------
 function Test(moduleName, // @arg String|StringArray - target modules.
@@ -1713,6 +1715,11 @@ function _nwTestRunner(that, task) {
 function _onload(that, task) {
     _testRunner(that, function finishedCallback(err) {
         _finishedLog(that, err);
+
+        var n = that._secondary ? 2 : 1;
+
+        document.title = (err ? GHOST : BEER).repeat(n) + document.title;
+
       //document.body["style"]["backgroundColor"] = err ? "red" : "lime";
         task.done(err);
     });
@@ -1846,10 +1853,12 @@ function _getMissFunction(that, missMessage) { // @ret MissFunction
 }
 
 function _finishedLog(that, err) {
+    var n = that._secondary ? 2 : 1;
+
     if (err) {
-        _getMissFunction(that, "SOME MISSED.")();
+        _getMissFunction(that, GHOST.repeat(n) + "  SOME MISSED.")();
     } else {
-        _getPassFunction(that, "ALL PASSED.")();
+        _getPassFunction(that, BEER.repeat(n)  + "  ALL PASSED.")();
     }
 }
 
@@ -1881,6 +1890,13 @@ function _addTestButton(that,
 function _getFunctionName(fn) {
     return fn["name"] ||
           (fn + "").split(" ")[1].split("\x28")[0]; // IE
+}
+
+if (!String.prototype.repeat) {
+    String.prototype.repeat = function(n) {
+        n = n | 0;
+        return (this.length && n > 0) ? new Array(n + 1).join(this) : "";
+    };
 }
 
 // --- exports ---------------------------------------------

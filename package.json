@@ -32,19 +32,19 @@
     "develop": false,
     "label": ["@dev"],
     "browser": {
-      "source": ["lib/Task.js"],
+      "source": ["lib/Task.js", "lib/TaskMap.js"],
       "output": "release/Task.b.min.js"
     },
     "worker": {
-      "source": ["lib/Task.js"],
+      "source": ["lib/Task.js", "lib/TaskMap.js"],
       "output": "release/Task.w.min.js"
     },
     "node": {
-      "source": ["lib/Task.js"],
+      "source": ["lib/Task.js", "lib/TaskMap.js"],
       "output": "release/Task.n.min.js"
     },
     "nw": {
-      "source": ["lib/Task.js"],
+      "source": ["lib/Task.js", "lib/TaskMap.js"],
       "output": "release/Task.nw.min.js"
     }
   },
