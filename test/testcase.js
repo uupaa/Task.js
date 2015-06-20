@@ -19,6 +19,7 @@ var test = new Test("Task", {
         errorback:  function(error) {
         }
     }).add([
+        testNoArguments,
         // --- Task ---
         testPassWithoutArgument,
         testMissWithoutArgument,
@@ -48,8 +49,8 @@ var test = new Test("Task", {
         testParallelExecution,
         testDelay,
         testZeroDelay,
-        testArrayTask,
-        testArrayWithRoute,
+      //testArrayTask,
+      //testArrayWithRoute,
         testMapWithoutRoute,
         testArg,
         testThrowTask,
@@ -86,6 +87,13 @@ if (1) {
 }
 
 // --- test cases ------------------------------------------
+function testNoArguments(test, pass, miss) {
+    var task = new Task();
+
+    task.pass();
+    test.done(pass());
+}
+
 function testPassWithoutArgument(test, pass, miss) {
     var task = new Task("testPassWithoutArgument", 2, callback);
 
@@ -669,6 +677,7 @@ function testZeroDelay(test, pass, miss) {
     });
 }
 
+/*
 function testArrayTask(test, pass, miss) {
 
     var route = "";
@@ -687,7 +696,9 @@ function testArrayTask(test, pass, miss) {
         }
     });
 }
+ */
 
+/*
 function testArrayWithRoute(test, pass, miss) {
 
     var route = "";
@@ -706,6 +717,7 @@ function testArrayWithRoute(test, pass, miss) {
         }
     });
 }
+ */
 
 
 function testMapWithoutRoute(test, pass, miss) {
@@ -783,14 +795,14 @@ function test500TaskBench(test, pass, miss) {
 
     // create task
     var tasks = 500;
-    var taskMap = [];
+    var taskMap = {};
     for (var i = 0; i < tasks; ++i) {
-        taskMap["task" + i] = function(task) { task.pass(); };
+        taskMap[i] = function(task) { task.pass(); };
     }
 
     var time = Date.now();
 
-    TaskMap("test500TaskBench", "", taskMap, callback);
+    TaskMap("test500TaskBench", Object.keys(taskMap).join(">"), taskMap, callback);
 }
 
 function test500PromiseBench(test, pass, miss) {
