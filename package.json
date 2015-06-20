@@ -1,6 +1,6 @@
 {
   "name": "uupaa.task.js",
-  "version": "0.9.1",
+  "version": "1.0.0",
   "description": "Counter based task executor.",
   "url": "https://github.com/uupaa/Task.js",
   "keywords": ["async", "task", "flow", "util", "uupaa", "WebModule"],
@@ -25,30 +25,33 @@
     "patch": "node ../WebModule/run/patch.js",
     "setup": "node ../WebModule/run/setup.js",
     "start": "cd ../; Python -m SimpleHTTPServer 8000 &",
-    "stop": "killall -- Python -m SimpleHTTPServer 8000; exit 0"
+    "stop": "killall -- Python -m SimpleHTTPServer 8000; exit 0",
+    "wiki": "node ../WebModule/run/wiki.js"
   },
   "webmodule": {
     "develop": false,
-    "label": ["@dev"],
+    "label": ["@dev", "@taskmap"],
     "browser": {
-      "source": ["lib/Task.js"],
+      "source": ["lib/Task.js", "lib/TaskMap.js"],
       "output": "release/Task.b.min.js"
     },
     "worker": {
-      "source": ["lib/Task.js"],
+      "source": ["lib/Task.js", "lib/TaskMap.js"],
       "output": "release/Task.w.min.js"
     },
     "node": {
-      "source": ["lib/Task.js"],
+      "source": ["lib/Task.js", "lib/TaskMap.js"],
       "output": "release/Task.n.min.js"
     },
     "nw": {
-      "source": ["lib/Task.js"],
+      "source": ["lib/Task.js", "lib/TaskMap.js"],
       "output": "release/Task.nw.min.js"
     }
   },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "uupaa.es.js": ""
+  },
   "lib": "./lib/",
   "main": "./index.js",
   "author": "uupaa",
