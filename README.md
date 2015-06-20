@@ -37,10 +37,10 @@ sub2.pass(); // -> "finished"
 var taskArg = ["red", "green", "blue", "black"];
 
 WebModule.TaskMap("MyTaskMap", "a > 1000 > b + c > d", {
-        a: function(task, arg, index) { task.buffer.push(arg[0]); task.pass(); },
-        b: function(task, arg, index) { task.buffer.push(arg[1]); task.pass(); },
-        c: function(task, arg, index) { task.buffer.push(arg[2]); task.pass(); },
-        d: function(task, arg, index) { task.buffer.push(arg[3]); task.pass(); },
+        a: function(task, arg, cursor) { task.buffer.push(arg[0]); task.pass(); },
+        b: function(task, arg, cursor) { task.buffer.push(arg[1]); task.pass(); },
+        c: function(task, arg, cursor) { task.buffer.push(arg[2]); task.pass(); },
+        d: function(task, arg, cursor) { task.buffer.push(arg[3]); task.pass(); },
     }, function(error, buffer) {
         console.log(buffer.join()); // "red,green,blue,black"
     }, taskArg);
