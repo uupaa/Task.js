@@ -56,6 +56,7 @@ var test = new Test("Task", {
         testThrowTask,
         // --- TaskPassFunction, TaskMissFunction ---
         testClosureFunction,
+        testClosureFunctionDone,
         // --- README.md ---
         testREADME1,
         testREADME2,
@@ -850,6 +851,20 @@ function testClosureFunction(test, pass, miss) {
     missfn();
     passfn();
     passfn();
+}
+
+function testClosureFunctionDone(test, pass, miss) {
+    var task = new Task("testClosureFunctionDone", 1, function(error) {
+                if (error) {
+                    test.done(pass());
+                } else {
+                    test.done(miss());
+                }
+            });
+
+    var donefn = task.donefn;
+
+    donefn(new Error());
 }
 
 function testREADME1(test, pass, miss) {

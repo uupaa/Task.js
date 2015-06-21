@@ -1,6 +1,6 @@
 {
   "name": "uupaa.task.js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Counter based task executor.",
   "url": "https://github.com/uupaa/Task.js",
   "keywords": ["async", "task", "flow", "util", "uupaa", "WebModule"],
