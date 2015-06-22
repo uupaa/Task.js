@@ -38,8 +38,8 @@ var test = new Test("Task", {
         testJunctionWithSharedBuffer,
         testJunctionWithSharedBuffer2,
 //      testCallback3rdArgIsTaskInstance,
+      //testDrop,
         testDump,
-        testDrop,
         testZeroTaskCount,
         // --- Task.run ---
         testSharedBuffer,
@@ -511,7 +511,7 @@ function testDump(test, pass, miss) {
     function callback(err, buffer) {
     }
 
-    Task.drop();
+  //Task.drop();
 
     var task1 = new Task("testDump-1", 1, callback);
     var task2 = new Task("testDump-2", 1, callback);
