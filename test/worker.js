@@ -14,6 +14,9 @@ onmessage = function(event) {
 
     importScripts("../lib/WebModule.js");
 
+    //publish to global. eg: window.WebModule.Class -> window.Class
+    //WebModule.publish = true;
+
     importScripts("../node_modules/uupaa.es.js/lib/ES.js");
     importScripts("wmtools.js");
     importScripts("../lib/Task.js");

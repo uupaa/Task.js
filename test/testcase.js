@@ -62,6 +62,8 @@ var test = new Test("Task", {
         testREADME2,
         testREADME3,
         testUnicodeIdentify,
+        // --- -> ---
+        testTaskMap_allow,
     ]);
 
 if (IN_BROWSER || IN_NW) {
@@ -928,6 +930,24 @@ function testUnicodeIdentify(test, pass, miss) {
     });
 
     TaskMap("ラーメン作る",   "麺ゆでる > 盛り付け", map, order); // 麺ゆでる を実行後に 盛り付け を実行
+    TaskMap("餃子と炒飯作る", "餃子 + 炒飯",         map, order); // 餃子 と 炒飯 を並列に調理}
+}
+
+function testTaskMap_allow(test, pass, miss) {
+    var map = {
+        "麺ゆでる": function(task) { console.log("麺を茹でた"); task.pass(); },
+        "盛り付け": function(task) { console.log("器に盛りつけた"); task.pass(); },
+        "餃子": function(task) { console.log("餃子焼いた"); task.pass(); },
+        "炒飯": function(task) { console.log("炒飯作った"); task.pass(); },
+    };
+
+    var order = new Task("🍜セットのオーダー入りました", 2, function(error) {
+        // (麺ゆでる -> 盛り付け) + (餃子 + 炒飯) が終わったら、お客様に出します
+        console.log("😃 お待たせしました、🍜セットです");
+        test.done(pass());
+    });
+
+    TaskMap("ラーメン作る",   "麺ゆでる -> 盛り付け", map, order); // 麺ゆでる を実行後に 盛り付け を実行
     TaskMap("餃子と炒飯作る", "餃子 + 炒飯",         map, order); // 餃子 と 炒飯 を並列に調理}
 }
 
