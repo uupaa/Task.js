@@ -2,8 +2,8 @@
 
 require("../lib/WebModule.js");
 
-//publish to global. eg: window.WebModule.Class -> window.Class
-//WebModule.publish = true;
+// publish to global
+WebModule.publish = true;
 
 require("../node_modules/uupaa.es.js/lib/ES.js");
 require("./wmtools.js");

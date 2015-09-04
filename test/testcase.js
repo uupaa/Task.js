@@ -157,8 +157,8 @@ function testPassWithObjectKey(test, pass, miss) {
 
     function callback(err, buffer) { // buffer = [0, 3] + { one: 1, two: 2 },
 
-        var flattenValues = Object.toArray(buffer); // [0, 3]
-        var buffer_left = JSON.stringify(Array.toObject(buffer)); // { "0": 0, "1": 3, "one": 1, "two": 2 }
+        var flattenValues = Object_toArray(buffer); // [0, 3]
+        var buffer_left = JSON.stringify(Array_toObject(buffer)); // { "0": 0, "1": 3, "one": 1, "two": 2 }
 
         if (err === null &&
             flattenValues.join() === [0, 3].join() &&
@@ -169,6 +169,18 @@ function testPassWithObjectKey(test, pass, miss) {
             test.done(miss());
         }
     }
+}
+
+function Object_toArray(source) { // @arg Array|ArrayLikeObject
+                                  // @ret Array
+    return Array.prototype.slice.call(source);
+}
+function Array_toObject(source) { // @arg Array
+                                  // @ret Object
+    return Object.keys(source).reduce(function(result, key) {
+        result[key] = source[key];
+        return result;
+    }, {});
 }
 
 function testExecuteSyncAndAsyncTask(test, pass, miss) { // task sync 4 events
@@ -562,7 +574,7 @@ function testSharedBuffer(test, pass, miss) {
         };
 
     var junction = new Task("testSharedBuffer", 2, function(err, buffer, junction) {
-            if (buffer.flatten().join() === "value2,value2") {
+            if (Array_flatten(buffer).join() === "value2,value2") {
                 test.done(pass());
             } else {
                 test.done(miss());
@@ -571,6 +583,9 @@ function testSharedBuffer(test, pass, miss) {
 
     TaskMap("testSharedBuffer-1", "task1 > 1000 > task2", taskMap, junction);
     TaskMap("testSharedBuffer-2", "task1 > task2 > 1000", taskMap, junction);
+}
+function Array_flatten(that) { // @ret Array
+    return Array.prototype.concat.apply([], that);
 }
 
 function testNoTask(test, pass, miss) {
