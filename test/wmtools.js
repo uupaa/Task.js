@@ -50,6 +50,8 @@ var ES6_IDENTIFY_KEYWORD =
         "enum|class|super|extends|implements|interface|private|protected|package|" +
         "static|public|export|import|yield|let|const|with";
 
+var functionCache = global["WeakMap"] ? new global["WeakMap"]() : null;
+
 // --- class / interfaces ----------------------------------
 function Reflection() {
 }
@@ -66,7 +68,8 @@ Reflection["getModuleRepository"]   = Reflection_getModuleRepository;   // Refle
 Reflection["getBaseClassName"]      = Reflection_getBaseClassName;      // Reflection.getBaseClassName(value):String
 Reflection["getConstructorName"]    = Reflection_getConstructorName;    // Reflection.getConstructorName(value):String
 // --- function ---
-Reflection["getFunctionAttribute"]  = Reflection_getFunctionAttribute;  // Reflection.getFunctionAttribute(target:Function, name:String = "all"):Object
+Reflection["parseFunction"]         = Reflection_parseFunction;         // Reflection.parseFunction(target:Function):Object
+Reflection["buildFunction"]         = Reflection_buildFunction;         // Reflection.buildFunction(declaration:Object):String
 // --- link ---
 Reflection["getSearchLink"]         = Reflection_getSearchLink;         // Reflection.getSearchLink(path:String):Object
 Reflection["getReferenceLink"]      = Reflection_getReferenceLink;      // Reflection.getReferenceLink(path:String):Object
@@ -196,31 +199,29 @@ function _findPropertyMember(target, root, className, keys) {
     return "";
 }
 
-function Reflection_getFunctionAttribute(target, // @arg Function
-                                         name) { // @arg String = "all"
-                                                 // @ret Object - { attrName: { name, type, optional, comment }, ... }
-    var result = {};
-    var sourceCode = target + "";
-    var head = _splitFunctionDeclaration(sourceCode)["head"]; // { head, body }
+function Reflection_parseFunction(target) { // @arg Function
+                                            // @ret Object - { name:String, head:StringArray, body:StringArray, arg:StringArray, ret:StringArray }
+    if (functionCache && functionCache.has(target)) {
+        return functionCache.get(target);
+    }
+    var result = _splitFunctionDeclaration(target + ""); // { head, body }
 
-    switch (name || "all") {
-    case "all":
-        _getArg(head, result);
-        _getRet(head, result);
-        break;
-    case "arg":
-        _getArg(head, result);
-        break;
-    case "ret":
-        _getRet(head, result);
-        break;
+    result["name"] = target["name"];
+    result["arg"]  = _getArg(result["head"]);
+    result["ret"]  = _getRet(result["head"]);
+
+    if (functionCache) {
+        functionCache.set(target, result);
     }
     return result;
 }
 
-function _getArg(head,     // @arg StringArray - [line, ...]
-                 result) { // @arg Object
-                           // @ret Object - result + { "arg": [{ name, type, optional, comment }, ...] }
+function Reflection_buildFunction(declaration) { // @arg Object - { head, body, arg, ret }
+    return ""; // TODO impl
+}
+
+function _getArg(head) { // @arg StringArray - [line, ...]
+                         // @ret Object - [{ name, type, optional, comment }, ...]
     // get @arg attribute.
     //
     //      function Foo_add(name,     // @arg Function|String = ""   comment
@@ -230,8 +231,7 @@ function _getArg(head,     // @arg StringArray - [line, ...]
     //                       name              type              opt  comment
     //      }
 
-    result["arg"] = [];
-
+    var result = [];
     var format = /^([\w\|\/,]+)\s*(=\s*("[^"]*"|'[^']*'|\S+))?\s*([^\n]*)$/;
 
     head.forEach(function(line, lineNumber) {
@@ -251,16 +251,15 @@ function _getArg(head,     // @arg StringArray - [line, ...]
                 optional = token[3] || "";
                 comment  =(token[4] || "").replace(/^[ :#\-]+/, "");
             }
-            result["arg"].push({ "name": name, "type": type,
-                                 "optional": optional, "comment": comment });
+            result.push({ "name": name, "type": type,
+                          "optional": optional, "comment": comment });
         }
     });
     return result;
 }
 
-function _getRet(head,     // @arg StringArray - [line, ...]
-                 result) { // @arg Object
-                           // @ret Object - { "ret": { types, comment }, ... }
+function _getRet(head) { // @arg StringArray - [line, ...]
+                         // @ret Object - [{ types, comment }, ...]
     // get @ret attribute.
     //
     //      function Foo_add(name,     // @arg Function|String = ""   comment
@@ -270,8 +269,7 @@ function _getRet(head,     // @arg StringArray - [line, ...]
     //                                         type                   comment
     //      }
 
-    result["ret"] = [];
-
+    var result = [];
     var format = /^([\w\|\/,]+)\s+([^\n]*)$/;
 
     head.forEach(function(line, lineNumber) {
@@ -286,9 +284,9 @@ function _getRet(head,     // @arg StringArray - [line, ...]
 
             if (token) {
                 type    = token[1];
-                comment = token[2];
+                comment =(token[2] || "").replace(/^[ :#\-]+/, "");
             }
-            result["ret"].push({ "type": type, "comment": comment });
+            result.push({ "type": type, "comment": comment });
         }
     });
     return result;
@@ -722,7 +720,11 @@ Valid["isRegistered"]   = Valid_isRegistered;   // Valid.isRegistered(type:HookT
 function Valid_args(api,    // @arg Function
                     args) { // @arg Array|ArrayLike
     if (global["Reflection"]) {
-        global["Reflection"]["getFunctionAttribute"](api, "arg")["arg"].forEach(function(item, index) {
+        var func = global["Reflection"]["parseFunction"](api);
+
+        //global["Reflection"]["buildFunction"](func);
+
+        func["arg"].forEach(function(item, index) {
             var type = item["type"];
 
             if (item["optional"]) {
@@ -766,7 +768,7 @@ function Valid_type(value,   // @arg Any
         case "FunctionArray":
                             return Array.isArray(value) && _isFunctionArray(value);
         case "Percent":     return typeof value === "number" && value >= 0.0 && value <= 1.0;
-        // --- integer ---
+        // --- Integer ---
         case "Integer":     return _isInt(value);
         case "Int32":       return _isInt(value)  && value <= 0x7fffffff && value >= -0x80000000;
         case "Int16":       return _isInt(value)  && value <= 0x7fff     && value >= -0x8000;
@@ -774,6 +776,13 @@ function Valid_type(value,   // @arg Any
         case "Uint32":      return _isUint(value) && value <= 0xffffffff;
         case "Uint16":      return _isUint(value) && value <= 0xffff;
         case "Uint8":       return _isUint(value) && value <= 0xff;
+        // --- Integer Array ---
+        case "INT32Array":  return Array.isArray(value) && value.every(function(v) { return _isInt(v)  && v <= 0x7fffffff && v >= -0x80000000; });
+        case "INT16Array":  return Array.isArray(value) && value.every(function(v) { return _isInt(v)  && v <= 0x7fff     && v >= -0x8000; });
+        case "INT8Array":   return Array.isArray(value) && value.every(function(v) { return _isInt(v)  && v <= 0x7f       && v >= -0x80; });
+        case "UINT32Array": return Array.isArray(value) && value.every(function(v) { return _isUint(v) && v <= 0xffffffff; });
+        case "UINT16Array": return Array.isArray(value) && value.every(function(v) { return _isUint(v) && v <= 0xffff; });
+        case "UINT8Array":  return Array.isArray(value) && value.every(function(v) { return _isUint(v) && v <= 0xff; });
         // --- color ---
         case "AARRGGBB":
         case "RRGGBBAA":    return _isUint(value) && value <= 0xffffffff; // Uint32
@@ -1536,12 +1545,13 @@ var BEER  = "\uD83C\uDF7B";
 
 // --- class / interfaces ----------------------------------
 function Test(moduleName, // @arg String|StringArray - target modules.
-              options) {  // @arg Object = {} - { disable, browser, worker, node, nw, button, both, ignoreError }
+              options) {  // @arg Object = {} - { disable, browser, worker, node, nw, el, button, both, ignoreError }
                           // @options.disable     Boolean = false - Disable all tests.
                           // @options.browser     Boolean = false - Enable the browser test.
                           // @options.worker      Boolean = false - Enable the webWorker test.
                           // @options.node        Boolean = false - Enable the node.js test.
-                          // @options.nw          Boolean = false - Enable the node-webkit test.
+                          // @options.nw          Boolean = false - Enable the NW.js test.
+                          // @options.el          Boolean = false - Enable the Electron (render process) test.
                           // @options.button      Boolean = false - Show test buttons.
                           // @options.both        Boolean = false - Test the primary and secondary module.
                           // @options.ignoreError Boolean = false - ignore error
@@ -1556,6 +1566,7 @@ function Test(moduleName, // @arg String|StringArray - target modules.
     this._worker      = options["worker"]      || false;
     this._node        = options["node"]        || false;
     this._nw          = options["nw"]          || false;
+    this._el          = options["el"]          || false;
     this._button      = options["button"]      || false;
     this._both        = options["both"]        || false;
     this._ignoreError = options["ignoreError"] || false;
@@ -1567,6 +1578,7 @@ function Test(moduleName, // @arg String|StringArray - target modules.
         this._worker  = false;
         this._node    = false;
         this._nw      = false;
+        this._el      = false;
         this._button  = false;
         this._both    = false;
     }
@@ -1589,7 +1601,7 @@ function Test_run(deprecated) { // @ret TestFunctionArray
     if (deprecated) { throw new Error("argument error"); }
 
     var that = this;
-    var plan = "node_primary > browser_primary > worker_primary > nw_primary";
+    var plan = "node_primary > browser_primary > worker_primary > nw_primary > el_primary";
 
     if (that._both) {
         if (IN_WORKER) {
@@ -1603,6 +1615,7 @@ function Test_run(deprecated) { // @ret TestFunctionArray
         browser_primary: function(task)     { _browserTestRunner(that, task); },
         worker_primary: function(task)      { _workerTestRunner(that, task); },
         nw_primary: function(task)          { _nwTestRunner(that, task); },
+        el_primary: function(task)          { _elTestRunner(that, task); },
         swap: function(task) {
             _swap(that);
             task.pass();
@@ -1611,6 +1624,7 @@ function Test_run(deprecated) { // @ret TestFunctionArray
         browser_secondary: function(task)   { _browserTestRunner(that, task); },
         worker_secondary: function(task)    { _workerTestRunner(that, task); },
 //      nw_secondary: function(task)        { _nwTestRunner(that, task); },
+//      el_secondary: function(task)        { _elTestRunner(that, task); },
     }, function taskFinished(err) {
         _undo(that);
 //        if (err && global["console"]) {
@@ -1643,9 +1657,10 @@ function _testRunner(that,               // @arg this
         }
         var test = {
             done: function(error) {
-                if (IN_BROWSER || IN_NW) {
-                    _addTestButton(that, testCase, error ? "red" : "green");
-
+                if (IN_BROWSER || IN_NW || IN_EL) {
+                    if (that._button) {
+                        _addTestButton(that, testCase, error ? "red" : "green");
+                    }
                     var green = ((++progress.cur / progress.max) * 255) | 0;
                     var bgcolor = "rgb(0, " + green + ", 0)";
 
@@ -1689,8 +1704,10 @@ function _browserTestRunner(that, task) {
         if (IN_BROWSER) {
             if (document["readyState"] === "complete") { // already document loaded
                 _onload(that, task);
-            } else {
+            } else if (global.addEventListener) { // avoid [IE8] error
                 global.addEventListener("load", function() { _onload(that, task); });
+            } else if (global.attachEvent) {
+                global.attachEvent("onload", function() { _onload(that, task); });
             }
             return;
         }
@@ -1704,6 +1721,20 @@ function _nwTestRunner(that, task) {
             if (document["readyState"] === "complete") { // already document loaded
                 _onload(that, task);
             } else {
+                global.addEventListener("load", function() { _onload(that, task); });
+            }
+            return;
+        }
+    }
+    task.pass();
+}
+
+function _elTestRunner(that, task) {
+    if (that._el) {
+        if (IN_EL) {
+            if (document["readyState"] === "complete") { // already document loaded
+                _onload(that, task);
+            } else if (global.addEventListener) {
                 global.addEventListener("load", function() { _onload(that, task); });
             }
             return;
@@ -1793,10 +1824,14 @@ function _swap(that) {
         if (!that._secondary) {
             that._secondary = true;
             that._module.forEach(function(moduleName) {
-                var ns = global["WebModule"];
-
-                ns["$$$" + moduleName + "$$$"] = ns[moduleName];
-                ns[moduleName] = ns[moduleName + "_"]; // swap primary <-> secondary module
+                // swap primary <-> secondary module runtime
+                //  [1] keep original runtime to `global.WebModule.moduleName$p$ = primaryModule`
+                //  [2] overwrite module runtime
+                global["WebModule"][moduleName + "$p$"] = global["WebModule"][moduleName];       // [1]
+                global["WebModule"][moduleName]         = global["WebModule"][moduleName + "_"]; // [2]
+                if (global["WebModule"]["publish"]) { // published?
+                    global[moduleName]                  = global["WebModule"][moduleName + "_"]; // [2]
+                }
             });
         }
     }
@@ -1807,10 +1842,13 @@ function _undo(that) {
         if (that._secondary) {
             that._secondary = false;
             that._module.forEach(function(moduleName) {
-                var ns = global["WebModule"];
-
-                ns[moduleName] = ns["$$$" + moduleName + "$$$"];
-                delete ns["$$$" + moduleName + "$$$"];
+                // swap secondary <-> primary module runtime
+                //  [1] return to original runtime
+                global["WebModule"][moduleName] = global["WebModule"][moduleName + "$p$"]; // [1]
+                if (global["WebModule"]["publish"]) { // published?
+                    global[moduleName]          = global["WebModule"][moduleName + "$p$"]; // [1]
+                }
+                delete global["WebModule"][moduleName + "$p$"];
             });
         }
     }
@@ -1821,6 +1859,7 @@ function _getConsoleStyle() {
         return IN_NODE   ? "node"
              : IN_WORKER ? "worker"
              : IN_NW     ? "nw"
+             : IN_EL     ? "el"
              : STYLISH   ? "color" : "browser";
     }
     return "";
@@ -1829,12 +1868,17 @@ function _getConsoleStyle() {
 function _getPassFunction(that, passMessage) { // @ret PassFunction
     var order = that._secondary ? "secondary" : "primary";
 
+    if (typeof console.log !== "function") { // [IE9] console.log is not function.
+        return function() { console.log(passMessage); };
+    }
+
     switch ( _getConsoleStyle() ) {
     case "node":    return console.log.bind(console, INFO + "Node(" + order + "): " + CLR + passMessage);
     case "worker":  return console.log.bind(console,      "Worker(" + order + "): " + passMessage);
     case "color":   return console.log.bind(console,   "%cBrowser(" + order + "): " + passMessage + "%c ", "color:#0c0", "");
     case "browser": return console.log.bind(console,     "Browser(" + order + "): " + passMessage);
-    case "nw":      return console.log.bind(console, "node-webkit(" + order + "): " + passMessage);
+    case "nw":      return console.log.bind(console,          "nw(" + order + "): " + passMessage);
+    case "el":      return console.log.bind(console,    "electron(" + order + "): " + passMessage);
     }
     return null;
 }
@@ -1847,7 +1891,8 @@ function _getMissFunction(that, missMessage) { // @ret MissFunction
     case "worker":  return function() { console.error(   "Worker(" + order + "): " + missMessage);                           return new Error(); };
     case "color":   return function() { console.error("%cBrowser(" + order + "): " + missMessage + "%c ", "color:#red", ""); return new Error(); };
     case "browser": return function() { console.error(  "Browser(" + order + "): " + missMessage);                           return new Error(); };
-    case "nw":      return function() { console.error("node-webkit("+order + "): " + missMessage);                           return new Error(); };
+    case "nw":      return function() { console.error(       "nw(" + order + "): " + missMessage);                           return new Error(); };
+    case "el":      return function() { console.error( "electron(" + order + "): " + missMessage);                           return new Error(); };
     }
     return null;
 }
@@ -1856,9 +1901,9 @@ function _finishedLog(that, err) {
     var n = that._secondary ? 2 : 1;
 
     if (err) {
-        _getMissFunction(that, GHOST.repeat(n) + "  SOME MISSED.")();
+        _getMissFunction(that, GHOST.repeat(n) + "  MISS.")();
     } else {
-        _getPassFunction(that, BEER.repeat(n)  + "  ALL PASSED.")();
+        _getPassFunction(that, BEER.repeat(n)  + "  PASS ALL.")();
     }
 }
 

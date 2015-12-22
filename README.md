@@ -4,10 +4,14 @@
 
 Counter based task executor.
 
-- Task.js made of [WebModule](https://github.com/uupaa/WebModule).
-- [Spec](https://github.com/uupaa/Task.js/wiki/Task)
 
-## Browser and NW.js(node-webkit)
+This module made of [WebModule](https://github.com/uupaa/WebModule).
+
+## Documentation
+- [Spec](https://github.com/uupaa/Task.js/wiki/)
+- [API Spec](https://github.com/uupaa/Task.js/wiki/Task)
+
+## Browser, NW.js and Electron
 
 ```js
 <script src="<module-dir>/lib/WebModule.js"></script>
@@ -15,7 +19,8 @@ Counter based task executor.
 <script>
 
 // --- Task ---
-var task = new WebModule.Task("MyTask", 2, function(error, buffer) {
+
+var task = new Task("MyTask", 2, function(error, buffer) {
         console.log(buffer.join(" ")); // "Hello Task.js"
         console.log(task.name + " " + task.state + "ed"); // "MyTask passed"
     });
@@ -25,25 +30,26 @@ task.pass();
 task.pass();
 
 // --- Task and Junction ---
-var task = new WebModule.Task("Junction", 2, function() { console.log("finished"); });
-var sub1 = new WebModule.Task("SubTask1", 1, task);
-var sub2 = new WebModule.Task("SubTask2", 1, task);
+
+var task = new Task("Junction", 2, function() { console.log("finished"); });
+var sub1 = new Task("SubTask1", 1, task);
+var sub2 = new Task("SubTask2", 1, task);
 
 sub1.pass();
 sub2.pass(); // -> "finished"
 
 
 // --- TaskMap ---
-var taskArg = ["red", "green", "blue", "black"];
 
-WebModule.TaskMap("MyTaskMap", "a > 1000 > b + c > d", {
-        a: function(task, arg, cursor) { task.buffer.push(arg[0]); task.pass(); },
-        b: function(task, arg, cursor) { task.buffer.push(arg[1]); task.pass(); },
-        c: function(task, arg, cursor) { task.buffer.push(arg[2]); task.pass(); },
-        d: function(task, arg, cursor) { task.buffer.push(arg[3]); task.pass(); },
+TaskMap("MyTaskMap", "a > 1000 > b + c > d", {
+        arg: ["red", "green", "blue", "black"],
+        a: function(task, cursor) { task.buffer.push(this.arg[0]); task.pass(); },
+        b: function(task, cursor) { task.buffer.push(this.arg[1]); task.pass(); },
+        c: function(task, cursor) { task.buffer.push(this.arg[2]); task.pass(); },
+        d: function(task, cursor) { task.buffer.push(this.arg[3]); task.pass(); },
     }, function(error, buffer) {
         console.log(buffer.join()); // "red,green,blue,black"
-    }, taskArg);
+    });
 
 
 </script>

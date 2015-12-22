@@ -12,16 +12,18 @@ onmessage = function(event) {
         self.console.table = function() {};
     }
 
-    importScripts("../lib/WebModule.js");
+    importScripts("../../lib/WebModule.js");
 
-    //publish to global. eg: window.WebModule.Class -> window.Class
-    //WebModule.publish = true;
+    WebModule.verify  = true;
+    WebModule.verbose = true;
+    WebModule.publish = true;
 
-    __MODULES__
-    __WMTOOLS__
-    __SOURCES__
-    __OUTPUT__
-    __TEST_CASE__
+    importScripts("../../node_modules/uupaa.es.js/lib/ES.js");
+    importScripts("../wmtools.js");
+    importScripts("../../lib/Task.js");
+    importScripts("../../lib/TaskMap.js");
+    importScripts("../../release/Task.w.min.js");
+    importScripts("../testcase.js");
 
     self.postMessage(self.unitTest);
 };

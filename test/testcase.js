@@ -1,22 +1,19 @@
 var ModuleTestTask = (function(global) {
 
-global["BENCHMARK"] = false;
-
-var Task    = WebModule.Task;
-var TaskMap = WebModule.TaskMap;
-
-var test = new Test("Task", {
+var test = new Test(["Task", "TaskMap"], { // Add the ModuleName to be tested here (if necessary).
         disable:    false, // disable all tests.
         browser:    true,  // enable browser test.
         worker:     true,  // enable worker test.
         node:       true,  // enable node test.
         nw:         true,  // enable nw.js test.
+        el:         true,  // enable electron (render process) test.
         button:     true,  // show button.
         both:       true,  // test the primary and secondary modules.
         ignoreError:false, // ignore error.
         callback:   function() {
         },
         errorback:  function(error) {
+            console.error(error.message);
         }
     }).add([
         testNoArguments,
@@ -66,17 +63,17 @@ var test = new Test("Task", {
         testTaskMap_allow,
     ]);
 
-if (IN_BROWSER || IN_NW) {
+if (IN_BROWSER || IN_NW || IN_EL) {
     test.add([
-        // browser and node-webkit test
+        // Browser, NW.js and Electron test
     ]);
 } else if (IN_WORKER) {
     test.add([
-        // worker test
+        // WebWorkers test
     ]);
 } else if (IN_NODE) {
     test.add([
-        // node.js and io.js test
+        // Node.js test
     ]);
 }
 
@@ -157,8 +154,8 @@ function testPassWithObjectKey(test, pass, miss) {
 
     function callback(err, buffer) { // buffer = [0, 3] + { one: 1, two: 2 },
 
-        var flattenValues = Object.toArray(buffer); // [0, 3]
-        var buffer_left = JSON.stringify(Array.toObject(buffer)); // { "0": 0, "1": 3, "one": 1, "two": 2 }
+        var flattenValues = Array.from(buffer); // [0, 3]
+        var buffer_left = JSON.stringify(_array_toObject(buffer)); // { "0": 0, "1": 3, "one": 1, "two": 2 }
 
         if (err === null &&
             flattenValues.join() === [0, 3].join() &&
@@ -168,6 +165,16 @@ function testPassWithObjectKey(test, pass, miss) {
         } else {
             test.done(miss());
         }
+    }
+    function _array_toObject(array) {
+        var result = {};
+        var keys = Object.keys(array);
+        for (var i = 0, iz = keys.length; i < iz; ++i) {
+            var key = keys[i];
+            var value = array[key];
+            result[key] = value;
+        }
+        return result;
     }
 }
 
@@ -562,7 +569,7 @@ function testSharedBuffer(test, pass, miss) {
         };
 
     var junction = new Task("testSharedBuffer", 2, function(err, buffer, junction) {
-            if (buffer.flatten().join() === "value2,value2") {
+            if (_array_flatten(buffer).join() === "value2,value2") {
                 test.done(pass());
             } else {
                 test.done(miss());
@@ -571,6 +578,10 @@ function testSharedBuffer(test, pass, miss) {
 
     TaskMap("testSharedBuffer-1", "task1 > 1000 > task2", taskMap, junction);
     TaskMap("testSharedBuffer-2", "task1 > task2 > 1000", taskMap, junction);
+
+    function _array_flatten(array) {
+        return Array.prototype.concat.apply([], array);
+    }
 }
 
 function testNoTask(test, pass, miss) {
@@ -746,14 +757,14 @@ function testMapWithoutRoute(test, pass, miss) {
 
 function testArg(test, pass, miss) {
 
-    var arg = { a: 1, b: 2, c: 3 };
     var route = "";
 
     TaskMap("testArg", "task_a > task_c > task_b", {
-        task_a: function(task, arg) { route += arg.a; task.pass(); },
-        task_b: function(task, arg) { route += arg.b; route === "132" ? task.pass()
+        arg: { a: 1, b: 2, c: 3 },
+        task_a: function(task) { route += this.arg.a; task.pass(); },
+        task_b: function(task) { route += this.arg.b; route === "132" ? task.pass()
                                                                       : task.miss(); },
-        task_c: function(task, arg) { route += arg.c; route === "13" ? task.pass()
+        task_c: function(task) { route += this.arg.c; route === "13" ? task.pass()
                                                                      : task.miss(); },
     }, function(err, buffer) {
         if (err) {
@@ -761,7 +772,7 @@ function testArg(test, pass, miss) {
         } else {
             test.done(pass());
         }
-    }, arg);
+    });
 }
 
 function testThrowTask(test, pass, miss) {
@@ -894,25 +905,25 @@ function testREADME2(test, pass, miss) {
 }
 
 function testREADME3(test, pass, miss) {
-    var taskArg = ["red", "green", "blue", "black"];
 
     TaskMap("MyTaskMap", "a > 1000 > b + c > d", {
-            a: function(task, arg, index) {
-                task.buffer.push(arg[0]); task.pass();
+            arg: ["red", "green", "blue", "black"],
+            a: function(task, index) {
+                task.buffer.push(this.arg[0]); task.pass();
             },
-            b: function(task, arg, index) {
-                task.buffer.push(arg[1]); task.pass();
+            b: function(task, index) {
+                task.buffer.push(this.arg[1]); task.pass();
             },
-            c: function(task, arg, index) {
-                task.buffer.push(arg[2]); task.pass();
+            c: function(task, index) {
+                task.buffer.push(this.arg[2]); task.pass();
             },
-            d: function(task, arg, index) {
-                task.buffer.push(arg[3]); task.pass();
+            d: function(task, index) {
+                task.buffer.push(this.arg[3]); task.pass();
             },
         }, function(error, buffer) {
             console.log(buffer.join()); // "red,green,blue,black"
             test.done(pass());
-        }, taskArg);
+        });
 }
 
 function testUnicodeIdentify(test, pass, miss) {

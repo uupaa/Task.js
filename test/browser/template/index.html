@@ -2,10 +2,11 @@
 <meta name="viewport" content="width=device-width, user-scalable=no">
 <meta charset="utf-8"></head><body>
 
-<script src="../lib/WebModule.js"></script>
+<script src="../../lib/WebModule.js"></script>
 <script>
-//publish to global. eg: window.WebModule.Class -> window.Class
-//WebModule.publish = true;
+WebModule.verify  = __WEBMODULE_VERIFY__;
+WebModule.verbose = __WEBMODULE_VERBOSE__;
+WebModule.publish = __WEBMODULE_PUBLISH__;
 </script>
 
 __MODULES__
