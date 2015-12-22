@@ -581,11 +581,7 @@ function testSharedBuffer(test, pass, miss) {
         };
 
     var junction = new Task("testSharedBuffer", 2, function(err, buffer, junction) {
-<<<<<<< HEAD
             if (_array_flatten(buffer).join() === "value2,value2") {
-=======
-            if (Array_flatten(buffer).join() === "value2,value2") {
->>>>>>> d1f10c23ec74154b1762bd4cff317630daabfbe4
                 test.done(pass());
             } else {
                 test.done(miss());
