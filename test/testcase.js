@@ -178,6 +178,18 @@ function testPassWithObjectKey(test, pass, miss) {
     }
 }
 
+function Object_toArray(source) { // @arg Array|ArrayLikeObject
+                                  // @ret Array
+    return Array.prototype.slice.call(source);
+}
+function Array_toObject(source) { // @arg Array
+                                  // @ret Object
+    return Object.keys(source).reduce(function(result, key) {
+        result[key] = source[key];
+        return result;
+    }, {});
+}
+
 function testExecuteSyncAndAsyncTask(test, pass, miss) { // task sync 4 events
     var task = new Task("testExecuteSyncAndAsyncTask", 4, callback);
     var testResult = [1, 2, 3, 4];
@@ -569,7 +581,11 @@ function testSharedBuffer(test, pass, miss) {
         };
 
     var junction = new Task("testSharedBuffer", 2, function(err, buffer, junction) {
+<<<<<<< HEAD
             if (_array_flatten(buffer).join() === "value2,value2") {
+=======
+            if (Array_flatten(buffer).join() === "value2,value2") {
+>>>>>>> d1f10c23ec74154b1762bd4cff317630daabfbe4
                 test.done(pass());
             } else {
                 test.done(miss());
@@ -582,6 +598,9 @@ function testSharedBuffer(test, pass, miss) {
     function _array_flatten(array) {
         return Array.prototype.concat.apply([], array);
     }
+}
+function Array_flatten(that) { // @ret Array
+    return Array.prototype.concat.apply([], that);
 }
 
 function testNoTask(test, pass, miss) {

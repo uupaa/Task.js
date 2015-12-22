@@ -29,7 +29,9 @@
     "patch": "node ../WebModule/run/patch.js",
     "setup": "node ../WebModule/run/setup.js",
     "start": "cd ../; Python -m SimpleHTTPServer 8000 &",
-    "stop": "killall -- Python -m SimpleHTTPServer 8000; exit 0"
+    "stop": "killall -- Python -m SimpleHTTPServer 8000; exit 0",
+    "wiki": "node ../WebModule/run/wiki.js",
+    "add-src": "node ../WebModule/run/add-src.js"
   },
   "webmodule": {
     "develop": false,
