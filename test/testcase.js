@@ -61,23 +61,15 @@ var test = new Test(["Task", "TaskMap"], { // Add the ModuleName to be tested he
         testUnicodeIdentify,
         // --- -> ---
         testTaskMap_allow,
+        // --- TaskMap.each ---
+        testTaskMap_eachObject,
+        testTaskMap_eachArray,
+        testTaskMap_eachObject_tick_this,
+        testTaskMap_eachArray_tick_this,
+        testDelay,
     ]);
 
-if (IN_BROWSER || IN_NW || IN_EL) {
-    test.add([
-        // Browser, NW.js and Electron test
-    ]);
-} else if (IN_WORKER) {
-    test.add([
-        // WebWorkers test
-    ]);
-} else if (IN_NODE) {
-    test.add([
-        // Node.js test
-    ]);
-}
-
-if (1) {
+if (0) {
     if (this["XMLHttpRequest"]) {
         test.add([ testMissableRecover ]);
     }
@@ -976,6 +968,81 @@ function testTaskMap_allow(test, pass, miss) {
     TaskMap("ラーメン作る",   "麺ゆでる -> 盛り付け", map, order); // 麺ゆでる を実行後に 盛り付け を実行
     TaskMap("餃子と炒飯作る", "餃子 + 炒飯",         map, order); // 餃子 と 炒飯 を並列に調理}
 }
+
+function testTaskMap_eachObject(test, pass, miss) {
+    var source = { a: 1, b: 2, c: 3 };
+    var result = {};
+
+    TaskMap.each("testTaskMap_eachObject", source, function(err, buffer) {
+        if (err) {
+            test.done(miss());
+        } else if (JSON.stringify(result) === JSON.stringify(source)) {
+            test.done(pass());
+        } else {
+            test.done(miss());
+        }
+    }, function(task, key, source) {
+        result[key] = source[key];
+        task.pass();
+    });
+}
+
+function testTaskMap_eachArray(test, pass, miss) {
+    var source = [1, 2, 3];
+    var result = [];
+
+    TaskMap.each("testTaskMap_eachArray", source, function(err, buffer) {
+        if (err) {
+            test.done(miss());
+        } else if (JSON.stringify(result) === JSON.stringify(source)) {
+            test.done(pass());
+        } else {
+            test.done(miss());
+        }
+    }, function(task, key, source) {
+        result[key] = source[key];
+        task.pass();
+    });
+}
+
+function testTaskMap_eachObject_tick_this(test, pass, miss) {
+    var source = { a: 1, b: 2, c: 3 };
+    var result = {};
+    var tick_this = { zero: 0 };
+
+    TaskMap.each("testTaskMap_eachObject_tick_this", source, function(err, buffer) {
+        if (err) {
+            test.done(miss());
+        } else if (JSON.stringify(result) === JSON.stringify({ a: 0, b: 0, c: 0 })) {
+            test.done(pass());
+        } else {
+            test.done(miss());
+        }
+    }, function(task, key, source) {
+        result[key] = source[key] * this.zero; // tick_this = { zero: 0 }
+        task.pass();
+    }, tick_this);
+}
+
+function testTaskMap_eachArray_tick_this(test, pass, miss) {
+    var source = [1, 2, 3];
+    var result = [];
+    var tick_this = { zero: 0 };
+
+    TaskMap.each("testTaskMap_eachArray_tick_this", source, function(err, buffer) {
+        if (err) {
+            test.done(miss());
+        } else if (JSON.stringify(result) === JSON.stringify([0,0,0])) {
+            test.done(pass());
+        } else {
+            test.done(miss());
+        }
+    }, function(task, key, source) {
+        result[key] = source[key] * this.zero; // tick_this = { zero: 0 }
+        task.pass();
+    }, tick_this);
+}
+
 
 return test.run();
 
