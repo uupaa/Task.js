@@ -64,9 +64,11 @@ var test = new Test(["Task", "TaskMap"], { // Add the ModuleName to be tested he
         // --- TaskMap.each ---
         testTaskMap_eachObject,
         testTaskMap_eachArray,
-        testTaskMap_eachObject_tick_this,
-        testTaskMap_eachArray_tick_this,
+        testTaskMap_eachObject_tickThis,
+        testTaskMap_eachArray_tickThis,
         testDelay,
+        testTaskMap_eachArray_sleep_20,
+        testTaskMap_eachArray_fliter,
     ]);
 
 if (0) {
@@ -1005,12 +1007,12 @@ function testTaskMap_eachArray(test, pass, miss) {
     });
 }
 
-function testTaskMap_eachObject_tick_this(test, pass, miss) {
+function testTaskMap_eachObject_tickThis(test, pass, miss) {
     var source = { a: 1, b: 2, c: 3 };
     var result = {};
-    var tick_this = { zero: 0 };
+    var options = { tickThis: { zero: 0 } };
 
-    TaskMap.each("testTaskMap_eachObject_tick_this", source, function(err, buffer) {
+    TaskMap.each("testTaskMap_eachObject_tickThis", source, function finishedCallback(err, buffer) {
         if (err) {
             test.done(miss());
         } else if (JSON.stringify(result) === JSON.stringify({ a: 0, b: 0, c: 0 })) {
@@ -1018,18 +1020,18 @@ function testTaskMap_eachObject_tick_this(test, pass, miss) {
         } else {
             test.done(miss());
         }
-    }, function(task, key, source) {
+    }, function tickCallback(task, key, source) {
         result[key] = source[key] * this.zero; // tick_this = { zero: 0 }
         task.pass();
-    }, tick_this);
+    }, options);
 }
 
-function testTaskMap_eachArray_tick_this(test, pass, miss) {
+function testTaskMap_eachArray_tickThis(test, pass, miss) {
     var source = [1, 2, 3];
     var result = [];
-    var tick_this = { zero: 0 };
+    var options = { tickThis: { zero: 0 } };
 
-    TaskMap.each("testTaskMap_eachArray_tick_this", source, function(err, buffer) {
+    TaskMap.each("testTaskMap_eachArray_tickThis", source, function finishedCallback(err, buffer) {
         if (err) {
             test.done(miss());
         } else if (JSON.stringify(result) === JSON.stringify([0,0,0])) {
@@ -1037,10 +1039,52 @@ function testTaskMap_eachArray_tick_this(test, pass, miss) {
         } else {
             test.done(miss());
         }
-    }, function(task, key, source) {
+    }, function tickCallback(task, key, source) {
         result[key] = source[key] * this.zero; // tick_this = { zero: 0 }
         task.pass();
-    }, tick_this);
+    }, options);
+}
+
+function testTaskMap_eachArray_sleep_20(test, pass, miss) {
+    var source    = [1, 2, 3];
+    var options   = { sleep: 20 };
+    var startTime = Date.now();
+  //var flow      = "_ > 20 > _ > 20 > _";
+
+    TaskMap.each("testTaskMap_eachArray_sleep_20", source, function finishedCallback(err, buffer) {
+        if (err) {
+            test.done(miss());
+        } else if (Date.now() - startTime >= 40) { // 20ms x 2 = 40ms
+            test.done(pass());
+        } else {
+            test.done(miss());
+        }
+    }, function tickCallback(task, key, source) {
+        task.pass();
+    }, options);
+}
+
+function testTaskMap_eachArray_fliter(test, pass, miss) {
+    var source    = [1, 2, 3]; // keys: ["0", "1", "2"]
+    var result    = [];
+    var options   = {
+        filter: function(keys) {
+            return ["0", "2"]; // ignore key:1
+        }
+    };
+
+    TaskMap.each("testTaskMap_eachArray_filter", source, function finishedCallback(err, buffer) {
+        if (err) {
+            test.done(miss());
+        } else if (result.join(",") === "0,2") {
+            test.done(pass());
+        } else {
+            test.done(miss());
+        }
+    }, function tickCallback(task, key, source) {
+        result.push(key);
+        task.pass();
+    }, options);
 }
 
 
