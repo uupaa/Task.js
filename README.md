@@ -58,16 +58,16 @@ TaskMap("MyTaskMap", "a > 1000 > b + c > d", {
 ## WebWorkers
 
 ```js
-importScripts("<module-dir>lib/WebModule.js");
-importScripts("<module-dir>lib/Task.js");
+importScripts("<module-dir>/lib/WebModule.js");
+importScripts("<module-dir>/lib/Task.js");
 
 ```
 
 ## Node.js
 
 ```js
-require("<module-dir>lib/WebModule.js");
-require("<module-dir>lib/Task.js");
+require("<module-dir>/lib/WebModule.js");
+require("<module-dir>/lib/Task.js");
 
 ```
 

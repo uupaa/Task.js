@@ -1,6 +1,6 @@
 {
   "name": "uupaa.task.js",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Counter based task executor.",
   "url": "https://github.com/uupaa/Task.js",
   "keywords": ["async", "task", "flow", "uupaa", "WebModule"],
@@ -22,6 +22,7 @@
     "el": "electron test/el",
     "nw": "nw test/nw",
     "add-src": "node ../WebModule/run/add-src.js",
+    "add-subclass": "node ../WebModule/run/add-subclass.js",
     "sim": "node ../WebModule/run/sim.js http://localhost:8000/Task.js/test/browser/index.html",
     "simx": "node ../WebModule/run/sim.js stop",
     "lint": "eslint lib/*.js",
@@ -29,46 +30,45 @@
     "patch": "node ../WebModule/run/patch.js",
     "setup": "node ../WebModule/run/setup.js",
     "start": "cd ../; Python -m SimpleHTTPServer 8000 &",
-    "stop": "killall -- Python -m SimpleHTTPServer 8000; exit 0",
-    "add-subclass": "node ../WebModule/run/add-subclass.js"
+    "stop": "killall -- Python -m SimpleHTTPServer 8000; exit 0"
   },
   "webmodule": {
     "develop": false,
     "label": ["@dev", "@taskmap"],
     "browser": {
+      "output": "release/Task.b.min.js",
       "source": [
         "lib/Task.js",
         "lib/TaskMap.js"
-      ],
-      "output": "release/Task.b.min.js"
+      ]
     },
     "worker": {
+      "output": "release/Task.w.min.js",
       "source": [
         "lib/Task.js",
         "lib/TaskMap.js"
-      ],
-      "output": "release/Task.w.min.js"
+      ]
     },
     "node": {
+      "output": "release/Task.n.min.js",
       "source": [
         "lib/Task.js",
         "lib/TaskMap.js"
-      ],
-      "output": "release/Task.n.min.js"
+      ]
     },
     "nw": {
+      "output": "release/Task.nw.min.js",
       "source": [
         "lib/Task.js",
         "lib/TaskMap.js"
-      ],
-      "output": "release/Task.nw.min.js"
+      ]
     },
     "el": {
+      "output": "release/Task.el.min.js",
       "source": [
         "lib/Task.js",
         "lib/TaskMap.js"
-      ],
-      "output": "release/Task.el.min.js"
+      ]
     }
   },
   "dependencies": {},
